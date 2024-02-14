@@ -1,9 +1,11 @@
 using ClassicalApi.Core.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+// -----------------------------------------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -14,7 +16,16 @@ builder.Services.AddScoped<IComposerRepository, ComposerRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseHttpsRedirection();
+// ------------------------------------------------------------------------------------
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+app.MapGet("/", () =>
+    new Dictionary<string,string>() { ["api-name"] = "classical-api", ["version"] = "0.0.1" }
+);
 
 app.MapGet("/composers", () =>
 {
