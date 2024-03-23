@@ -1,0 +1,65 @@
+﻿@using ClassicalApi.Web.Client.Components
+@inject DialogService dialogService
+@inherits LayoutComponentBase
+
+<RadzenComponents />
+<RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
+    <RadzenHeader Style="background-color:royalblue">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0" Style="padding-right:1em;" JustifyContent="JustifyContent.SpaceBetween">
+            <div class="d-flex">
+                <RadzenButton Variant="Variant.Text" Click="@(() => sidebarExpanded = !sidebarExpanded)">
+                    <img src="/src/ClassicalApiLogo.svg" height="40" />
+                </RadzenButton>
+                <RadzenText class="mb-0" Style="color:aliceblue; font-size:larger; align-self:center;" Text="Classical Api" />
+            </div>
+            <div class="my-auto">
+                <AuthorizeView>
+                    <Authorized>
+                        @context.User.Claims.Count();
+                    </Authorized>
+                    <NotAuthorized>
+                        <RadzenButton Text="LOG IN" Click="LoginBoxSwitch" />
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </RadzenStack>
+    </RadzenHeader>
+    <AppSideBar @bind-IsExpanded = "sidebarExpanded">
+        <RadzenPanelMenuItem Style="font-size:larger;" Text="Home" Icon="home" Path="/" Click="Collapse" />
+        <RadzenPanelMenuItem Style="font-size:larger;" Text="Composers" Icon="queue_music" Path="/composers" Click="Collapse" />
+        <RadzenPanelMenuItem Style="font-size:larger;" Text="User" Icon="account_box" Path="/account" Click="Collapse" />
+    </AppSideBar>
+    <RadzenBody>
+        <div class="rz-p-4" style="max-width:1200px;margin-inline:auto">
+            @Body
+        </div>
+    </RadzenBody>
+</RadzenLayout>
+
+
+
+@code {
+    bool sidebarExpanded = false;
+
+    private void Collapse() => sidebarExpanded = false;
+
+    bool loginBoxExpanded = false;
+
+    private async Task LoginBoxSwitch()
+    {
+        var title = "Log In";
+        var viewed = await dialogService.OpenAsync<LoginRegisterDialog>(title,
+               new Dictionary<string, object>() { },
+               new DialogOptions() { Width = "480px", Height = "640px", Resizable = false, Draggable = true, CloseDialogOnEsc = true });
+
+    }
+
+
+
+
+}
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>

@@ -39,6 +39,9 @@ namespace ClassicalApi.Core.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("PortraitId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ShortBio")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -51,7 +54,40 @@ namespace ClassicalApi.Core.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PortraitId")
+                        .IsUnique();
+
                     b.ToTable("Composers");
+                });
+
+            modelBuilder.Entity("ClassicalApi.Core.Models.Portrait", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("Image")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Portraits");
+                });
+
+            modelBuilder.Entity("ClassicalApi.Core.Models.Composer", b =>
+                {
+                    b.HasOne("ClassicalApi.Core.Models.Portrait", "Portrait")
+                        .WithOne("Composer")
+                        .HasForeignKey("ClassicalApi.Core.Models.Composer", "PortraitId");
+
+                    b.Navigation("Portrait");
+                });
+
+            modelBuilder.Entity("ClassicalApi.Core.Models.Portrait", b =>
+                {
+                    b.Navigation("Composer")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

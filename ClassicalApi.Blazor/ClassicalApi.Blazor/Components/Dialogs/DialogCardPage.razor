@@ -1,0 +1,56 @@
+﻿@* @page "/composercard/{ComposerId}" *@
+
+@using ClassicalApi.Blazor.Client.Models
+@inject IConfiguration Config
+@inject HttpClient Http
+@inject Radzen.DialogService dialogService
+@rendermode InteractiveServer
+
+<RadzenStack Gap="1rem" Orientation="Orientation.Vertical" JustifyContent="JustifyContent.SpaceBetween" Style="height: 100%;">
+    <RadzenStack>
+        <RadzenRow>
+            <RadzenColumn Size="12" SizeMD="6" Class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Contact</RadzenText>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                    <RadzenImage Path="/src/WholeNote.jpg" Style="width: 80px; height: 80px; border-radius: 50%" AlternateText="@(composer?.FirstName + " " + composer?.LastName)" />
+                    <RadzenStack Gap="0" Class="rz-text-truncate">
+                        <RadzenText TextStyle="TextStyle.Overline" Class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">@composer?.YearOfBirth</RadzenText>
+                    </RadzenStack>
+                </RadzenStack>
+            </RadzenColumn>
+            <RadzenColumn Size="12" SizeMD="6" Class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+                <RadzenText TextStyle="TextStyle.Subtitle1">Delivery Information</RadzenText>
+                <RadzenStack Gap="0" Class="rz-text-truncate">
+                    <RadzenText TextStyle="TextStyle.Overline" Class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">@composer?.YearOfDeath</RadzenText>
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+            <RadzenText TextStyle="TextStyle.Subtitle1" Class="rz-m-0">Order @composer?.CountryOfBirth Details</RadzenText>
+            <RadzenBadge BadgeStyle="BadgeStyle.Secondary" Text=@($"{String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", composer.CityOfBirth)}") />
+        </RadzenStack>
+
+    </RadzenStack>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem">
+        <RadzenButton Click="@((args) => dialogService.Close(true))" Variant="Variant.Flat" Text="Close" Style="width: 120px" />
+    </RadzenStack>
+</RadzenStack>
+
+@code {
+    [Parameter]
+    public int ComposerId { get; set; } = 1;
+
+    ComposerModel? composer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var requestUri = $"{Config["BackendUrl"]}/composers/{ComposerId}";
+        composer = await Http.GetFromJsonAsync<ComposerModel>(requestUri);
+        if(composer == null || composer.Id == 0)
+        {
+            dialogService.Close(true);
+        }
+    }
+}

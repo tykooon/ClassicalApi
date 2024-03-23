@@ -1,0 +1,50 @@
+﻿@page "/composers"
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using ClassicalApi.Web.Client.Services
+@using ClassicalApi.Web.Client.Models
+@using ClassicalApi.Web.Client.Components
+@inject IComposerService composerService
+@rendermode @(new InteractiveAutoRenderMode(prerender: false))
+
+
+<PageTitle>Composers</PageTitle>
+
+<div class="container m-3">
+    <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
+        <h1 style="margin:0 2rem 0 1rem;">Composers</h1>
+        @if (IsAdminUser)
+        {
+            <ComposerAddButton />
+        }
+    </RadzenRow>
+
+
+    <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
+        <PropertyColumn Property="c => c.Id" Title="#" Sortable="true"/>
+        <PropertyColumn Property="c => c.FirstName" Title="First Name"/>
+        <PropertyColumn Property="c => c.LastName" Title="Last Name" Sortable="true" />
+        <PropertyColumn Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
+        <PropertyColumn Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
+        <PropertyColumn Property="c => c.CityOfBirth" Title="City" Sortable="true" />
+        <TemplateColumn>
+            <ComposerViewButton ComposerId="context.Id" IsEditable="IsAdminUser"/>
+        </TemplateColumn>
+
+    </QuickGrid>
+    <Paginator State="pagination"></Paginator>
+
+</div>
+
+@code{
+    private bool IsAdminUser = true;
+
+    public ComposerModel[] ComposerList { get; set; } = [];
+
+    private PaginationState pagination = new() { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ComposerList = (await composerService.GetComposers()).ToArray(); ;
+    }
+}

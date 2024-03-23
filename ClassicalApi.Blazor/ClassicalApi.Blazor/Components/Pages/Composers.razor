@@ -1,0 +1,51 @@
+﻿@page "/composers"
+@using ClassicalApi.Blazor.Client.Models
+@using ClassicalApi.Blazor.Components.Dialogs
+@inject IConfiguration Config
+@inject HttpClient Http
+@rendermode InteractiveServer
+
+
+<PageTitle>Composers</PageTitle>
+
+<div class="container m-3">
+    <h1>Composers</h1>
+
+    <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
+        <PropertyColumn Property="c => c.Id" Title="#" Sortable="true"/>
+        <PropertyColumn Property="c => c.FirstName" Title="First Name"/>
+        <PropertyColumn Property="c => c.LastName" Title="Last Name" Sortable="true" />
+        <PropertyColumn Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
+        <PropertyColumn Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
+        <PropertyColumn Property="c => c.CityOfBirth" Title="City" Sortable="true" />
+        <TemplateColumn>
+            <button type="button" class="btn btn-primary" onclick=@(() => ComposerInfo(context.Id))><i class="bi bi-info-lg"></i> </button>
+        </TemplateColumn>
+
+    </QuickGrid>
+    <Paginator State="pagination"></Paginator>
+
+    <ComposerViewButton />
+
+</div>
+
+@code{
+    public ComposerModel[] ComposerList { get; set; } = [];
+
+    private PaginationState pagination = new() { ItemsPerPage = 10 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var requestUri = $"{Config["BackendUrl"]}/composers";
+        ComposerList = await Http.GetFromJsonAsync<ComposerModel[]>(requestUri) ?? Array.Empty<ComposerModel>();
+    }
+
+    private void ComposerInfo(int id)
+    {
+        
+    }
+
+
+
+
+}

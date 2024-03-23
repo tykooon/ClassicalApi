@@ -1,0 +1,26 @@
+﻿@inject DialogService dialogService
+
+<div class="rz-text-align-center">
+    <RadzenButton ButtonStyle="ButtonStyle.Secondary" Disabled="isDisabled"
+        Click=@(async () => await ShowComposerCard())>
+        <i class="bi bi-info-lg"></i>
+    </RadzenButton> 
+</div>
+
+@code {
+    [Parameter]
+    public int ComposerId { get; set; }
+
+    [Parameter]
+    public bool IsEditable { get; set; }
+
+    private bool isDisabled => ComposerId == 0;
+
+    public async Task ShowComposerCard()
+    {
+        var title = IsEditable ? "Edit composer info" : "View composer info";
+        var viewed = await dialogService.OpenAsync<ComposerCard>(title,
+               new Dictionary<string, object>() { { "ComposerId", ComposerId }, { "IsReadOnly", !IsEditable } },
+               new DialogOptions() { Width = "640px", Height = "720px", Resizable = true, Draggable = true, CloseDialogOnEsc = true });
+    }
+}

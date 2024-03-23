@@ -1,4 +1,6 @@
-﻿namespace ClassicalApi.Core.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ClassicalApi.Core.Models;
 
 public class Composer
 {
@@ -10,4 +12,8 @@ public class Composer
     public string CountryOfBirth { get; set; } = string.Empty;
     public string CityOfBirth { get; set; } = string.Empty;
     public string ShortBio { get; set; } = string.Empty;
+
+    [ForeignKey("Portrait")]
+    public int? PortraitId {  get; set; }
+    public Portrait? Portrait { get; set; }
 }

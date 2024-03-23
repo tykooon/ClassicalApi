@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClassicalApi.Core.Infrastructure;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) :
+    DbContext(options)
 {
     public DbSet<Composer> Composers { get; set; }
-
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public DbSet<Portrait> Portraits { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
