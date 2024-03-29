@@ -1,0 +1,14 @@
+﻿@inject DialogService dialogService
+
+<RadzenButton Text="LOG IN" Click="LoginBoxSwitch" />
+
+@code {
+    private async Task LoginBoxSwitch()
+    {
+        var title = "Log In";
+        var viewed = await dialogService.OpenAsync<LoginDialog>(title,
+               new Dictionary<string, object>() { },
+               new DialogOptions() { Width = "480px", Height = "640px", Resizable = false, Draggable = true, CloseDialogOnEsc = true });
+
+    }
+}

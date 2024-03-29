@@ -1,4 +1,5 @@
-﻿@using ClassicalApi.Web.Components.Account
+﻿@using ClassicalApi.Web.Client.Models
+@using ClassicalApi.Web.Components.Account
 @using ClassicalApi.Web.Data
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
@@ -8,18 +9,33 @@
 @inject IdentityRedirectManager RedirectManager
 
 <RadzenCard class="rz-my-4 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
-    <RadzenTemplateForm Data=@("LoginWithDefaultValues") >
-        <RadzenLogin AllowRegister="true" AllowResetPassword="true" Username=@userName Password=@password
-                     AllowRememberMe="true" RememberMe="@rememberMe"
-                     Login=@(args => OnLogin(args, "Login with default values"))
-                     ResetPassword=@(args => OnResetPassword(args, "Login with default values"))
-                     Register=@(args => OnRegister("Login with default values")) />
+    <RadzenTemplateForm Data=@("RegisterDefaultValues") >
+        <RadzenFieldset Text="User Info" Style="min-width:300px;">
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">First Name</RadzenText>
+            <RadzenTextBox Placeholder="First Name..." @bind-Value="registerInfo.FirstName" class="w-100 mb-3" aria-label="First Name"/>
+
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Last Name</RadzenText>
+            <RadzenTextBox Placeholder="Last Name..." @bind-Value="registerInfo.LastName" class="w-100 mb-3" aria-label="Last Name"/>
+
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Email</RadzenText>
+            <RadzenTextBox Placeholder="Email..." @bind-Value="registerInfo.LastName" class="w-100 mb-3" aria-label="Email"/>
+
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Password</RadzenText>
+            <RadzenPassword Placeholder="Password..." @bind-Value="registerInfo.Password" class="w-100 mb-3" aria-label="Password"/>
+
+            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Password</RadzenText>
+            <RadzenPassword Placeholder="Password..." @bind-Value="registerInfo.ConfirmPassword" class="w-100 mb-3" aria-label="PasswordConfirm" />
+
+
+        </RadzenFieldset>
     </RadzenTemplateForm>
 </RadzenCard>
 
 @code {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    private RegisterInfo registerInfo { get; set; } = new();
 
     string userName = "admin";
     string password = "admin";
@@ -54,6 +70,7 @@
     void OnRegister(string name)
     {
         dialogService.Close(true);
+
     }
 
     void OnResetPassword(string value, string name)

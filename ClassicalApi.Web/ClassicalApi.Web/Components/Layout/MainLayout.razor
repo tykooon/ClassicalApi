@@ -18,7 +18,7 @@
                         @context.User.Claims.Count();
                     </Authorized>
                     <NotAuthorized>
-                        <RadzenButton Text="LOG IN" Click="LoginBoxSwitch" />
+                        <LoginButton />
                     </NotAuthorized>
                 </AuthorizeView>
             </div>
@@ -44,18 +44,6 @@
     private void Collapse() => sidebarExpanded = false;
 
     bool loginBoxExpanded = false;
-
-    private async Task LoginBoxSwitch()
-    {
-        var title = "Log In";
-        var viewed = await dialogService.OpenAsync<LoginRegisterDialog>(title,
-               new Dictionary<string, object>() { },
-               new DialogOptions() { Width = "480px", Height = "640px", Resizable = false, Draggable = true, CloseDialogOnEsc = true });
-
-    }
-
-
-
 
 }
 <div id="blazor-error-ui">

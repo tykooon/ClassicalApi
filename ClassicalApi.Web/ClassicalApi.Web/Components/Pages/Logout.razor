@@ -1,0 +1,16 @@
+﻿@page "/user/logout"
+
+@using ClassicalApi.Web.Data
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> signInManager
+@inject NavigationManager navigationManager
+
+<PageTitle>Loging out...</PageTitle>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await signInManager.SignOutAsync();
+        navigationManager.NavigateTo("/", forceLoad: true);
+    }
+}
