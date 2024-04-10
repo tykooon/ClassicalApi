@@ -1,0 +1,20 @@
+﻿@inject NavigationManager navigationManager
+
+@rendermode @(new InteractiveServerRenderMode(false))
+
+<form action="Account/Logout" method="post" name="logout">
+    <AntiforgeryToken />
+    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+    <button type="submit" class="btn btn-info">
+        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+    </button>
+</form>
+
+@code{
+    private string currentUrl = "";
+
+    protected override void OnInitialized()
+    {
+        currentUrl = navigationManager.ToBaseRelativePath(navigationManager.Uri);
+    }
+}

@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) :
 {
     public DbSet<Composer> Composers { get; set; }
     public DbSet<Portrait> Portraits { get; set; }
+    public DbSet<MediaLink> MediaLinks { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

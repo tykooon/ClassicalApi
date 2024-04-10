@@ -1,5 +1,8 @@
 body {
     background: none !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 html, body {
@@ -52,4 +55,22 @@ h1:focus {
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    background-color: rgb(78, 52, 244);
+    color: antiquewhite;
+    /*height: 60px;*/
+}
+
+main {
+    margin-top: 50px;
+    padding: 10px;
+}
+
+footer {
+    margin-top: auto;
+    width: 100%;
 }

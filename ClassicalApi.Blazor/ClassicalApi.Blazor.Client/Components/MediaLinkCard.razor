@@ -1,0 +1,84 @@
+﻿@using ClassicalApi.Blazor.Client.Models
+@using ClassicalApi.Blazor.Client.Services
+@inject IComposerService composerService
+@inject Radzen.DialogService dialogService
+
+@if (linkModel == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div style="min-width:480px;">
+        <RadzenTemplateForm Data="@linkModel" Submit="@(async(MediaLinkModel data) => await SaveMediaLink(linkModel) )">
+
+            <RadzenFieldset Text="Media Info" Style="min-width:300px;">
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Title</RadzenText>
+                <RadzenTextBox Placeholder="Title..." @bind-Value="linkModel.Title" class="w-100 mb-3" aria-label="First Name"/>
+
+                <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">URL</RadzenText>
+                <RadzenTextBox Placeholder="URL..." @bind-Value="linkModel.Url" class="w-100 mb-3" aria-label="Last Name" />
+            </RadzenFieldset>
+
+@*                 <RadzenTextArea Rows="10" @bind-Value="composer.ShortBio" class="w-100 mb-3" aria-label="TextArea" ReadOnly=@IsReadOnly /> *@
+
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Medium" Icon="save" Text="Save" />
+                <RadzenButton ButtonStyle="ButtonStyle.Light" Variant="Variant.Filled" Size="ButtonSize.Medium" Icon="cancel" Text="Close" Click="@Cancel" />
+            </RadzenStack>
+        </RadzenTemplateForm>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int ComposerId { get; set; }
+
+    MediaLinkModel? linkModel;
+
+    void OnChange(string value, string name)
+    {
+        // TODO: Delete Console Logging
+        Console.WriteLine($"{name} value changed");
+    }
+
+    void OnError(UploadErrorEventArgs args, string name)
+    {
+        // TODO: Delete Console Logging
+        Console.WriteLine($"{args.Message}");
+    }
+
+
+    async Task SaveMediaLink(MediaLinkModel data)
+    {
+        // TODO: Realize validation for data
+        if (data == null)
+        {
+            dialogService.Close(false);
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(data.Title) && !string.IsNullOrEmpty(data.Url))
+        {
+            var res = await composerService.AddMedia(data);
+        }
+        dialogService.Close(true);
+    }
+
+    void Cancel()
+    {
+        dialogService.Close(false);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        linkModel = new()
+            {
+                ComposerIds = [ ComposerId ],
+            };
+    }
+
+}
+

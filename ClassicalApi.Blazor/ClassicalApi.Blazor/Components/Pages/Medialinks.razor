@@ -1,0 +1,82 @@
+﻿@page "/medialinks/{ComposerId:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "Regular")]
+
+@inject IComposerService composerService
+@inject AuthenticationStateProvider authProvider
+@inject NavigationManager navManager
+
+<PageTitle>Media Links</PageTitle>
+
+<div class="container m-3">
+    <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="mb-4">
+        <img src="@Portrait" style="max-width:120px; border-radius:50%;margin-bottom:6px" />
+        <h2 style="margin:0 2rem 0 1rem;">@Composer.FirstName @Composer.LastName</h2>
+    </RadzenRow>
+    <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
+        <h3 style="margin:0 2rem 0 1rem;">Media Links:</h3>
+        <MediaLinkAddButton ComposerId="@ComposerId" />
+    </RadzenRow>
+
+    <div style="width:fit-content">
+        <QuickGrid Items="LinkList.AsQueryable()" Pagination="pagination">
+            <PropertyColumn Property="c => c.Title" Title="Title" Sortable="true" />
+            <TemplateColumn>
+                <a  class="btn btn-primary" href="@context.Url" target="_blank">Open</a>
+            </TemplateColumn>
+            @if (IsAdmin)
+            {
+                <TemplateColumn>
+                    <RadzenButton Icon="delete" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Danger" Click="@(() => DeleteLink(context.Id))" />
+                </TemplateColumn>
+            }
+        </QuickGrid>
+        <Paginator State="pagination"></Paginator>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public int ComposerId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    private ComposerModel Composer = new();
+
+    private string Portrait = "";
+
+    private bool IsAdmin;
+
+    private IEnumerable<MediaLinkModel> LinkList = [];
+
+    private PaginationState pagination = new() { ItemsPerPage = 10 };
+
+    async Task DeleteLink(int id)
+    {
+        var res = await composerService.DeleteMediaById(id);
+        if(res)
+        {
+            // TODO: Show Toast
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await composerService.GetById(ComposerId);
+
+        if(data == null)
+        {
+            navManager.NavigateTo("/");
+        }
+
+        Composer = data!;
+        Portrait = "data:image/jpeg;base64," + await composerService.GetPortrait(ComposerId);
+        LinkList = await composerService.GetMediaLinks(ComposerId);
+
+        var state = await authenticationState!;
+
+        IsAdmin = state != null && (state.User.IsInRole("Administrator") || state.User.IsInRole("SuperAdmin"));
+    }
+}

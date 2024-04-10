@@ -15,9 +15,7 @@ public class ComposerClientService : IComposerService
 
     public ComposerClientService(IHttpClientFactory factory)
     {
-        _httpClient = factory.CreateClient();
-        _httpClient.BaseAddress = new Uri("http://localhost:5000");
-        _httpClient.DefaultRequestHeaders.Add("x-api-key", "muokY3cGjaA6juhmJmKyOOoZDhDscmrst2LosF9HieS5IH8o4JkkBroYEgqmn4yHVdXlqvpzm7Z5pn3iZqGJF5a8jL2SmcZzEHOEQpPeX1XermLkV6KImCybcDNQ3TVr");
+        _httpClient = factory.CreateClient("ApiServer");
     }
 
     public async Task<ComposerModel?> GetById(int id) =>

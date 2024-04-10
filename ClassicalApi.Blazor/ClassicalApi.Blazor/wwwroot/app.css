@@ -1,5 +1,30 @@
-body{
+body {
     background: none !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #006bb7;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.content {
+    padding-top: 1.1rem;
 }
 
 h1:focus {
@@ -31,3 +56,30 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+main {
+    margin-top: 50px;
+    padding: 20px 10px 10px;
+}
+
+footer {
+    margin-top: auto;
+    width: 100%;
+}
+
+.divider {
+    border-color: #000;
+    border-style: solid;
+    border-width: 0 0 1px;
+    height: 10px;
+    line-height: 20px;
+    text-align: center;
+}
+
+    .divider span {
+        background-color: #FFF;
+        display: inline-block;
+        padding: 0 10px;
+        min-height: 20px;
+        min-width: 5%;
+    }

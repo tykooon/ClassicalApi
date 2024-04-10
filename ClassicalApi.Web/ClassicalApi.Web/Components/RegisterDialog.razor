@@ -3,88 +3,113 @@
 @using ClassicalApi.Web.Data
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Text
+@using System.Text.Encodings.Web
 @inject DialogService dialogService
-@inject SignInManager<ApplicationUser> SignInManager
+@inject SignInManager<ApplicationUser> signInManager
+@inject UserManager<ApplicationUser> userManager
 @inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
+@inject IUserStore<ApplicationUser> userStore
+@inject IEmailSender<ApplicationUser> emailSender
 
-<RadzenCard class="rz-my-4 rz-mx-auto rz-p-4 rz-p-md-12" style="max-width: 600px;">
-    <RadzenTemplateForm Data=@("RegisterDefaultValues") >
-        <RadzenFieldset Text="User Info" Style="min-width:300px;">
-            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">First Name</RadzenText>
-            <RadzenTextBox Placeholder="First Name..." @bind-Value="registerInfo.FirstName" class="w-100 mb-3" aria-label="First Name"/>
-
-            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Last Name</RadzenText>
-            <RadzenTextBox Placeholder="Last Name..." @bind-Value="registerInfo.LastName" class="w-100 mb-3" aria-label="Last Name"/>
-
-            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Email</RadzenText>
-            <RadzenTextBox Placeholder="Email..." @bind-Value="registerInfo.LastName" class="w-100 mb-3" aria-label="Email"/>
-
-            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Password</RadzenText>
-            <RadzenPassword Placeholder="Password..." @bind-Value="registerInfo.Password" class="w-100 mb-3" aria-label="Password"/>
-
-            <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">Password</RadzenText>
-            <RadzenPassword Placeholder="Password..." @bind-Value="registerInfo.ConfirmPassword" class="w-100 mb-3" aria-label="PasswordConfirm" />
-
-
-        </RadzenFieldset>
-    </RadzenTemplateForm>
-</RadzenCard>
+@* <StatusMessage Message="@Message" /> *@
+<EditForm Model="registerInfo" asp-route-returnUrl="/" method="post" OnValidSubmit="RegisterUser" FormName="register">
+    <DataAnnotationsValidator />
+    <h3>Create a new account.</h3>
+    <hr />
+    <ValidationSummary class="text-danger" role="alert" />
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="registerInfo.FirstName" class="form-control" aria-required="true" placeholder="First Name" />
+        <label for="first-name">First Name</label>
+        <ValidationMessage For="() => registerInfo.FirstName" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="registerInfo.LastName" class="form-control" aria-required="true" placeholder="Last Name" />
+        <label for="last-name">Last Name</label>
+        <ValidationMessage For="() => registerInfo.LastName" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputText @bind-Value="registerInfo.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+        <label for="email">Email</label>
+        <ValidationMessage For="() => registerInfo.Email" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputText type="password" @bind-Value="registerInfo.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+        <label for="password">Password</label>
+        <ValidationMessage For="() => registerInfo.Password" class="text-danger" />
+    </div>
+    <div class="form-floating mb-3">
+        <InputText type="password" @bind-Value="registerInfo.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+        <label for="confirm-password">Confirm Password</label>
+        <ValidationMessage For="() => registerInfo.ConfirmPassword" class="text-danger" />
+    </div>
+    <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+</EditForm>
 
 @code {
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private RegisterInfo registerInfo { get; set; } = new();
+    [SupplyParameterFromForm]
+    private RegisterModel registerInfo { get; set; } = new();
 
-    string userName = "admin";
-    string password = "admin";
-    bool rememberMe = true;
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
 
-    async Task OnLogin(LoginArgs args, string name)
+    private IEnumerable<IdentityError>? identityErrors;
+
+    public async Task RegisterUser(EditContext editContext)
     {
-        var result = await SignInManager.PasswordSignInAsync(userName, password, rememberMe, lockoutOnFailure: false);
-        if (result.Succeeded)
+        var user = CreateUser();
+
+        await userStore.SetUserNameAsync(user, registerInfo.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, registerInfo.Email, CancellationToken.None);
+        var result = await userManager.CreateAsync(user, registerInfo.Password);
+
+        if (!result.Succeeded)
         {
-            dialogService.Close(true);
+            identityErrors = result.Errors;
+            return;
         }
-        // else if (result.RequiresTwoFactor)
-        // {
-        //     RedirectManager.RedirectTo(
-        //         "Account/LoginWith2fa",
-        //         new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
-        // }
-        // else if (result.IsLockedOut)
-        // {
-        //     Logger.LogWarning("User account locked out.");
-        //     RedirectManager.RedirectTo("Account/Lockout");
-        // }
-        else
+
+        var userId = await userManager.GetUserIdAsync(user);
+        var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = "/" });
+
+        await emailSender.SendConfirmationLinkAsync(user, registerInfo.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        if (!userManager.Options.SignIn.RequireConfirmedAccount)
         {
-            Console.WriteLine("Error: Invalid login attempt.");
-            dialogService.Close(false);
+            await signInManager.SignInAsync(user, isPersistent: false);
+        }
+
+        dialogService.Close(true);
+        NavigationManager.NavigateTo("/");
+    }
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
         }
     }
 
-
-    void OnRegister(string name)
+    private IUserEmailStore<ApplicationUser> GetEmailStore()
     {
-        dialogService.Close(true);
-
-    }
-
-    void OnResetPassword(string value, string name)
-    {
-        dialogService.Close(true);
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        var flag = HttpContext?.Request?.Method;
-        if (HttpMethods.IsGet(flag))
-    {
-            // Clear the existing external cookie to ensure a clean login process
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        if (!userManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
         }
+        return (IUserEmailStore<ApplicationUser>)userStore;
     }
 }

@@ -60,6 +60,25 @@ namespace ClassicalApi.Core.Migrations
                     b.ToTable("Composers");
                 });
 
+            modelBuilder.Entity("ClassicalApi.Core.Models.MediaLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MediaLinks");
+                });
+
             modelBuilder.Entity("ClassicalApi.Core.Models.Portrait", b =>
                 {
                     b.Property<int>("Id")
@@ -75,6 +94,21 @@ namespace ClassicalApi.Core.Migrations
                     b.ToTable("Portraits");
                 });
 
+            modelBuilder.Entity("ComposerMediaLink", b =>
+                {
+                    b.Property<int>("ComposersId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MediaLinksId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ComposersId", "MediaLinksId");
+
+                    b.HasIndex("MediaLinksId");
+
+                    b.ToTable("ComposerMediaLink");
+                });
+
             modelBuilder.Entity("ClassicalApi.Core.Models.Composer", b =>
                 {
                     b.HasOne("ClassicalApi.Core.Models.Portrait", "Portrait")
@@ -82,6 +116,21 @@ namespace ClassicalApi.Core.Migrations
                         .HasForeignKey("ClassicalApi.Core.Models.Composer", "PortraitId");
 
                     b.Navigation("Portrait");
+                });
+
+            modelBuilder.Entity("ComposerMediaLink", b =>
+                {
+                    b.HasOne("ClassicalApi.Core.Models.Composer", null)
+                        .WithMany()
+                        .HasForeignKey("ComposersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ClassicalApi.Core.Models.MediaLink", null)
+                        .WithMany()
+                        .HasForeignKey("MediaLinksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ClassicalApi.Core.Models.Portrait", b =>

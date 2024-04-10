@@ -23,9 +23,15 @@ builder.Services.AddCors(
 
 builder.Services.AddScoped<IComposerRepository, ComposerRepository>();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 app.UseCors("CorsPolicy");
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions()
 {

@@ -10,6 +10,8 @@ public interface IComposerRepository
     Composer? GetById(int composerId);
     IEnumerable<Composer> GetByLastName(string composerId);
     byte[]? GetPortrait(int composerId);
+    IEnumerable<MediaLink> GetMediaLinks(int composerId);
+    MediaLink? GetMediaLinkById(int id);
 
     //Commands
     int AddNew(Composer newComposer);
@@ -18,4 +20,7 @@ public interface IComposerRepository
 
     void AddPortrait(int composerId, byte[] image);
     void DeletePortrait(int composerId);
+
+    int AddNewMedia(MediaLink newMedia);
+    void DeleteMedia(int mediaId);
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace ClassicalApi.Core.Models;
 
@@ -15,5 +16,9 @@ public class Composer
 
     [ForeignKey("Portrait")]
     public int? PortraitId {  get; set; }
+    [JsonIgnore]
     public Portrait? Portrait { get; set; }
+
+    [JsonIgnore]
+    public List<MediaLink> MediaLinks { get; set; } = [];
 }

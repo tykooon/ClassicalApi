@@ -7,12 +7,14 @@ public class ComposerRepository : IComposerRepository
 {
     private readonly DbSet<Composer> _composers;
     private readonly DbSet<Portrait> _portraits;
+    private readonly DbSet<MediaLink> _mediaLinks;
     private readonly AppDbContext _ctx;
 
     public ComposerRepository(AppDbContext context)
     {
         _composers = context.Composers;
         _portraits = context.Portraits;
+        _mediaLinks = context.MediaLinks;
         _ctx = context;
     }
 
@@ -102,5 +104,44 @@ public class ComposerRepository : IComposerRepository
             EF.Functions.Like(c.CityOfBirth, $"%{query}%") ||
             EF.Functions.Like(c.CountryOfBirth, $"%{query}%")).ToList();
         return result;
+    }
+
+    public IEnumerable<MediaLink> GetMediaLinks(int composerId) => 
+        _mediaLinks.Where(m => m.Composers.Select(c => c.Id).Contains(composerId)).ToList();
+
+    public MediaLink? GetMediaLinkById(int mediaId) =>
+        _mediaLinks.Find(mediaId);
+
+
+
+    public int AddNewMedia(MediaLink newMedia)
+    {
+        if (newMedia == null || newMedia.Composers.Count == 0)
+        {
+            return 0;
+        }
+
+        foreach (var composerId in newMedia.ComposerIds)
+        {
+            var composer = _composers.Find(composerId);
+            if (composer == null)
+            {
+                return 0;
+            }
+        }
+
+        _mediaLinks.Add(newMedia);
+        _ctx.SaveChanges();
+        return newMedia.Id;
+    }
+
+    public void DeleteMedia(int mediaId)
+    {
+        var media = _mediaLinks.Find(mediaId);
+        if (media != null)
+        {
+            _mediaLinks.Remove(media);
+            _ctx.SaveChanges();
+        }
     }
 }

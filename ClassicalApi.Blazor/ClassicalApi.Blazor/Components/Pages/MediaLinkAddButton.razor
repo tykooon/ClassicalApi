@@ -1,0 +1,22 @@
+@using ClassicalApi.Blazor.Client;
+@inject DialogService dialogService
+
+<div class="rz-text-align-center">
+    <RadzenButton ButtonStyle="ButtonStyle.Success" Style="height:75%"
+                  Click=@(async () => await ShowAddLinkCard())>
+        <RadzenText TextStyle="TextStyle.H5" Style="color:aliceblue; margin-bottom:0;"><i class="bi bi-plus"></i>Add New Link</RadzenText>
+    </RadzenButton>
+</div>
+
+@code {
+    [Parameter]
+    public int ComposerId { get; set; }
+
+    public async Task ShowAddLinkCard()
+    {
+        var title = "Add new media link";
+        var viewed = await dialogService.OpenAsync<MediaLinkCard>(title,
+               new Dictionary<string, object>() { { "ComposerId", ComposerId } },
+               new DialogOptions() { Width = "540px", Height = "400px", Top = "80px", Resizable = true, Draggable = true, CloseDialogOnEsc = true });
+    }
+}

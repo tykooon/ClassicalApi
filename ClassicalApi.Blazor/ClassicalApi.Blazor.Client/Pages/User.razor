@@ -1,0 +1,36 @@
+﻿@page "/user"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "Regular")]
+
+<PageTitle>UserInfo</PageTitle>
+
+<div class="container m-3">
+    <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
+        <h1 style="margin:0 2rem 0 1rem;">
+            @if (_isAuthenticated)
+            {
+                <p>Welcome, @name</p>
+            }
+        </h1>
+    </RadzenRow>
+</div>
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    private bool _isAuthenticated;
+    private string name = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await authenticationState!;
+
+        _isAuthenticated =  state?.User?.Identity != null && state.User.Identity.IsAuthenticated;
+        name = state?.User?.Claims?.FirstOrDefault(cl => cl.Type == ClaimTypes.Email)?.Value ?? "Anonymous";
+    }
+
+}

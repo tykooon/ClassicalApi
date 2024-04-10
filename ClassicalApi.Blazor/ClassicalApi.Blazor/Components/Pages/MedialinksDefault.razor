@@ -1,0 +1,50 @@
+﻿@page "/medialinks"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "Regular")]
+
+@inject IComposerService composerService
+@inject NavigationManager navManager
+
+<PageTitle>Media Links</PageTitle>
+
+<div class="container my-3" style="max-width:800px; margin-inline:auto">
+    <RadzenRow JustifyContent="JustifyContent.Center" class="mb-4">
+        <h2 style="margin:0 2rem 0 1rem;">Media Links</h2>
+    </RadzenRow>
+    <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
+        <RadzenLabel Text="Select Composer: " Component="DropDownTextValueProperties" class="h3" Style="margin-right: 8px; vertical-align: middle;" />
+        <RadzenDropDown @bind-Value=@SelectedComposerId Style="min-width:50%" Data=@ComposerSelection TextProperty="FullName" ValueProperty="Id" />
+    </RadzenRow>
+    <RadzenRow JustifyContent="JustifyContent.Center" class="mb-4">
+        <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(()=>ViewMedia(SelectedComposerId))">View Media Links</RadzenButton>
+    </RadzenRow>
+</div>
+
+@code {
+    private int SelectedComposerId;
+
+    private List<ComposerSelectItem> ComposerSelection = [];
+
+    private void ViewMedia(int id)
+    {
+        navManager.NavigateTo($"/medialinks/{id}");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var composers = await composerService.GetComposers();
+        ComposerSelection = composers
+            .Select(c => new ComposerSelectItem()
+                {
+                    Id = c.Id,
+                    FullName = $"{c.LastName}, {c.FirstName}",
+                })
+            .ToList();
+    }
+
+    private class ComposerSelectItem
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; } = "";
+    }
+}

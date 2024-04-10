@@ -2,6 +2,7 @@
 using ClassicalApi.Core.Models;
 using ClassicalApi.Host.Authentication;
 using ClassicalApi.Host.Models;
+using Microsoft.AspNetCore.Mvc;
 namespace ClassicalApi.Host.EndPoints;
 
 public static class EndPointsExtension
@@ -63,6 +64,40 @@ public static class EndPointsExtension
                 repo.AddPortrait(id, data);
             }
         });
+
+        app.MapDelete("/medialinks/{id:int}", (int id) =>
+        {
+            using var context = app.Services.CreateScope();
+            var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
+            var media = repo.GetMediaLinkById(id);
+            if (media != null)
+            {
+                repo.DeleteMedia(id);
+            }
+        });
+
+        app.MapPost("/medialinks", (AddMediaLinkRequest load, HttpContext ctx) =>
+        {
+            if (load != null)
+            {
+                using var context = app.Services.CreateScope();
+                var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
+                var data = new MediaLink()
+                {
+                    Title = load.Title,
+                    Url = load.Url,
+                };
+                var composers = repo.GetAll().Where(c => load.ComposerIds.Contains(c.Id)).ToList();
+                if (composers.Count == 0)
+                {
+                    return Results.BadRequest("No composers assigned to media");
+                }
+                data.Composers = composers;
+                var result = repo.AddNewMedia(data);
+                return Results.Ok(result);
+            }
+            return Results.BadRequest("Unable to parse request.");
+        });
     }
 
     public static void AddQueryEndpoints(this WebApplication app)
@@ -103,6 +138,13 @@ public static class EndPointsExtension
             using var context = app.Services.CreateScope();
             var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
             return repo.Search(query);
+        });
+
+        app.MapGet("/medialinks", ([FromQuery] int composerId) =>
+        {
+            using var context = app.Services.CreateScope();
+            var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
+            return repo.GetMediaLinks(composerId);
         });
     }
 }

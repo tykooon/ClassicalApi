@@ -1,0 +1,43 @@
+﻿@using System.Security.Claims
+<nav class="navbar fixed-top bg-primary">
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0" Style="padding-right:1em;width:100%;" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+        <div class="d-flex align-items-center">
+            <RadzenButton Variant="Variant.Text" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                <img src="/src/ClassicalApiLogo.svg" height="40" />
+            </RadzenButton>
+            <RadzenText class="mb-0" Style="color:aliceblue; font-size:larger; align-self:center;" Text="Classical Api" />
+        </div>
+        <div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-inline-flex align-items-center">
+                        <span class="me-3" style="color:azure;">@context.User.FindFirst(ClaimTypes.Name)?.Value.ToString()</span>
+                        <LogoutButton />
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <LoginButton />
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </RadzenStack>
+    <div class="offcanvas text-light bg-dark offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Main Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <RadzenPanelMenu>
+                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Home" Icon="home" Path="/" data-bs-dismiss="offcanvas" />
+                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Composers" Icon="queue_music" Path="/composers" data-bs-dismiss="offcanvas" />
+                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Media Links" Icon="queue_music" Path="/medialinks" data-bs-dismiss="offcanvas" />
+                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="User" Icon="account_box" Path="/user" data-bs-dismiss="offcanvas" />
+            </RadzenPanelMenu>
+            <form class="d-flex mt-3" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+

@@ -1,51 +1,66 @@
 ﻿@page "/composers"
-@using ClassicalApi.Blazor.Client.Models
-@using ClassicalApi.Blazor.Components.Dialogs
-@inject IConfiguration Config
-@inject HttpClient Http
-@rendermode InteractiveServer
+
+@inject IComposerService composerService
+@inject NavigationManager navManager
+@rendermode @(new InteractiveAutoRenderMode(prerender: false))
+
 
 
 <PageTitle>Composers</PageTitle>
 
 <div class="container m-3">
-    <h1>Composers</h1>
+    <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
+        <h1 style="margin:0 2rem 0 1rem;">Composers</h1>
+        @if (IsAdminUser)
+        {
+            <ComposerAddButton />
+        }
+    </RadzenRow>
 
-    <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
-        <PropertyColumn Property="c => c.Id" Title="#" Sortable="true"/>
-        <PropertyColumn Property="c => c.FirstName" Title="First Name"/>
-        <PropertyColumn Property="c => c.LastName" Title="Last Name" Sortable="true" />
-        <PropertyColumn Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
-        <PropertyColumn Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
-        <PropertyColumn Property="c => c.CityOfBirth" Title="City" Sortable="true" />
-        <TemplateColumn>
-            <button type="button" class="btn btn-primary" onclick=@(() => ComposerInfo(context.Id))><i class="bi bi-info-lg"></i> </button>
-        </TemplateColumn>
-
-    </QuickGrid>
-    <Paginator State="pagination"></Paginator>
-
-    <ComposerViewButton />
+    <div style="width:fit-content">
+        <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
+            <PropertyColumn Property="c => c.Id" Title="#" Sortable="true" />
+            <PropertyColumn Property="c => c.FirstName" Title="First Name" />
+            <PropertyColumn Property="c => c.LastName" Title="Last Name" Sortable="true" />
+            <PropertyColumn Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
+            <PropertyColumn Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
+            <PropertyColumn Property="c => c.CityOfBirth" Title="City" Sortable="true" />
+            <TemplateColumn>
+                <ComposerViewButton ComposerId="context.Id" IsEditable="IsAdminUser" />
+            </TemplateColumn>
+            @if (IsAuthenticated)
+            {
+                <TemplateColumn>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">View Media Links</RadzenButton>
+                </TemplateColumn>
+            }
+        </QuickGrid>
+        <Paginator State="pagination"></Paginator>
+    </div>
 
 </div>
 
 @code{
+    private bool IsAdminUser;
+
+    private bool IsAuthenticated;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
     public ComposerModel[] ComposerList { get; set; } = [];
 
     private PaginationState pagination = new() { ItemsPerPage = 10 };
 
+    void RedirectToMedia(int id) => navManager.NavigateTo($"/medialinks/{id}");
+
     protected override async Task OnInitializedAsync()
     {
-        var requestUri = $"{Config["BackendUrl"]}/composers";
-        ComposerList = await Http.GetFromJsonAsync<ComposerModel[]>(requestUri) ?? Array.Empty<ComposerModel>();
+        ComposerList = (await composerService.GetComposers()).ToArray();
+
+        var state = await authenticationState!;
+
+        IsAdminUser = state != null && (state.User.IsInRole("Administrator") || state.User.IsInRole("SuperAdmin"));
+        IsAuthenticated = state != null && (state.User.Identity?.IsAuthenticated ?? false);
     }
-
-    private void ComposerInfo(int id)
-    {
-        
-    }
-
-
-
-
 }
