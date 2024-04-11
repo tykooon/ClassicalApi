@@ -15,7 +15,9 @@
     </RadzenRow>
     <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
         <h3 style="margin:0 2rem 0 1rem;">Media Links:</h3>
-        <MediaLinkAddButton ComposerId="@ComposerId" />
+        <AuthorizeView Policy="Admin">
+            <MediaLinkAddButton ComposerId="@ComposerId" />
+        </AuthorizeView>
     </RadzenRow>
 
     <div style="width:fit-content">
