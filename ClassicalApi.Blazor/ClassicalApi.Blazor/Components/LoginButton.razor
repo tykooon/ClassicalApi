@@ -10,6 +10,9 @@
     private void ToLogin()
     {
         Console.WriteLine("LoginAttempt");
-        navigationManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(navigationManager.Uri)}", forceLoad: true);
+        Console.WriteLine("Uri: " + navigationManager.Uri);
+        Console.WriteLine("Base: " + navigationManager.BaseUri);
+        Console.WriteLine("Relative: " + navigationManager.ToBaseRelativePath(navigationManager.Uri));
+        navigationManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(navigationManager.ToBaseRelativePath(navigationManager.Uri))}", forceLoad: true);
     }
 }

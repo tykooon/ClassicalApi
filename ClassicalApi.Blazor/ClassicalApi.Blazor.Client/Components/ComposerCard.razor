@@ -2,6 +2,7 @@
 @using ClassicalApi.Blazor.Client.Services
 @inject IComposerService composerService
 @inject Radzen.DialogService dialogService
+@inject NavigationManager navManager
 
 @if (composer == null)
 {
@@ -76,9 +77,6 @@ else
 
     string? portrait;
 
-    string fileName = "";
-    long? fileSize;
-
     void OnChange(string value, string name)
     {
         // TODO: Delete Console Logging
@@ -119,6 +117,7 @@ else
             // TODO: Delete Console Logging
         }
         dialogService.Close(true);
+        navManager.Refresh(true);
     }
 
     void Cancel()

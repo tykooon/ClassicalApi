@@ -2,6 +2,7 @@
 @using ClassicalApi.Blazor.Client.Services
 @inject IComposerService composerService
 @inject Radzen.DialogService dialogService
+@inject NavigationManager navManager
 
 @if (linkModel == null)
 {
@@ -63,6 +64,8 @@ else
             var res = await composerService.AddMedia(data);
         }
         dialogService.Close(true);
+        navManager.Refresh(true);
+
     }
 
     void Cancel()

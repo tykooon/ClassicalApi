@@ -5,6 +5,7 @@
 @inject IComposerService composerService
 @inject AuthenticationStateProvider authProvider
 @inject NavigationManager navManager
+@inject DialogService dialogService
 
 <PageTitle>Media Links</PageTitle>
 
@@ -29,7 +30,7 @@
             @if (IsAdmin)
             {
                 <TemplateColumn>
-                    <RadzenButton Icon="delete" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Danger" Click="@(() => DeleteLink(context.Id))" />
+                    <RadzenButton Icon="delete" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Danger" Click="@(async () => await ConfirmDelete(context.Title, context.Id))" />
                 </TemplateColumn>
             }
         </QuickGrid>
@@ -55,12 +56,19 @@
 
     private PaginationState pagination = new() { ItemsPerPage = 10 };
 
-    async Task DeleteLink(int id)
+    private async Task ConfirmDelete(string title, int id)
     {
-        var res = await composerService.DeleteMediaById(id);
-        if(res)
+        var confirm = await dialogService.Confirm($"You are going to delete link \"{title}\"?", "Confirm deleting", new()
+            {
+                OkButtonText = "Delete",
+                CancelButtonText="Cancel",
+                CssClass = "delete-confirm"
+
+            });
+        if(confirm != null && confirm.Value)
         {
-            // TODO: Show Toast
+            var res = await composerService.DeleteMediaById(id);
+            navManager.Refresh(true);
         }
     }
 

@@ -83,3 +83,10 @@ footer {
         min-height: 20px;
         min-width: 5%;
     }
+
+.delete-confirm 
+    .rz-dialog-content
+        .rz-dialog-confirm-buttons
+            button:first-of-type {
+    background-color: var(--rz-danger);
+}

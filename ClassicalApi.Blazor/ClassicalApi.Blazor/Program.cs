@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Radzen;
 using ClassicalApi.Blazor.Client.Services;
 using ClassicalApi.Blazor.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,12 +67,24 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
-    app.UseMigrationsEndPoint();
+    //app.UseMigrationsEndPoint();
 }
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions()
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+app.Use((ctx, next) =>
+{
+    ctx.Request.Scheme = "https";
+    return next();
+});
+
+app.UseResponseCaching();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
