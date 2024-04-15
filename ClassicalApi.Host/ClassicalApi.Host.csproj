@@ -21,4 +21,16 @@
     <ProjectReference Include="..\ClassicalApi.Core\ClassicalApi.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="private-settings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="app.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

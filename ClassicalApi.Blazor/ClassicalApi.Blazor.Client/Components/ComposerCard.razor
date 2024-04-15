@@ -10,10 +10,22 @@
 }
 else
 {
-    <div style="min-width:480px;">
+    <div style="min-width:500px;">
     <RadzenTemplateForm Data="@composer" Submit="@(async (ComposerModel data) => await SaveChanges(data) )">
         <RadzenRow Class="rz-p-0 rz-p-lg-4">
-            <RadzenColumn Size="8">
+            <RadzenColumn class="rz-col-xs-4">
+                <RadzenFieldset Text="Portrait" Style="height:100%;min-width:160px;">
+                        <img src="@portrait" style="max-width:120px; border-radius:50%;margin-bottom:6px"/>
+                        @if (!IsReadOnly)
+                        {
+                            <RadzenFileInput @bind-Value=@portrait TValue="string" class="w-100"
+                                             Change=@(args => OnChange(args, "FileInput")) ChooseText="Change" MaxWidth=0
+                                             Error=@(args => OnError(args, "FileInput")) ImageStyle="display:none"
+                                             InputAttributes="@(new Dictionary<string,object>(){{ "aria-label", "select file" }})" />
+                        }
+                </RadzenFieldset>
+            </RadzenColumn>
+                <RadzenColumn class="rz-col-xs-8">
                 <RadzenFieldset Text="Base Info" Style="min-width:300px;">
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">First Name(s)</RadzenText>
                     <RadzenTextBox Placeholder="First Name..." @bind-Value="composer.FirstName" class="w-100 mb-3" aria-label="First Name" ReadOnly=@IsReadOnly />
@@ -33,20 +45,8 @@ else
                     </RadzenRow>
                 </RadzenFieldset>
             </RadzenColumn>
-            <RadzenColumn Size="4">
-                <RadzenFieldset Text="Portrait" Style="height:100%;min-width:160px;">
-                        <img src="@portrait" style="max-width:120px; border-radius:50%;margin-bottom:6px"/>
-                        @if (!IsReadOnly)
-                        {
-                            <RadzenFileInput @bind-Value=@portrait TValue="string" class="w-100"
-                                             Change=@(args => OnChange(args, "FileInput")) ChooseText="Change" MaxWidth=0
-                                             Error=@(args => OnError(args, "FileInput")) ImageStyle="display:none"
-                                             InputAttributes="@(new Dictionary<string,object>(){{ "aria-label", "select file" }})" />
-                        }
-                </RadzenFieldset>
-            </RadzenColumn>
-            <RadzenColumn Size="12">
-                <RadzenFieldset Text="Short Bio" Style="min-width:470px;">
+                <RadzenColumn class="rz-col-xs-12">
+                <RadzenFieldset Text="Short Bio" Style="min-width:420px;">
                     <RadzenText TextStyle="TextStyle.Subtitle2" TagName="TagName.H3">City of Birth</RadzenText>
                     <RadzenTextBox Placeholder="First Name..." @bind-Value="composer.CityOfBirth" class="w-100 mb-3" aria-label="First Name" ReadOnly=@IsReadOnly />
 

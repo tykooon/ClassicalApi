@@ -1,4 +1,6 @@
 ﻿@using System.Security.Claims
+@inject NavigationManager navManager
+
 <nav class="navbar fixed-top bg-primary">
     <RadzenStack Orientation="Orientation.Horizontal" Gap="0" Style="padding-right:1em;width:100%;" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
         <div class="d-flex align-items-center">
@@ -29,15 +31,29 @@
         <div class="offcanvas-body">
             <RadzenPanelMenu>
                 <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Home" Icon="home" Path="/" data-bs-dismiss="offcanvas" />
-                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Composers" Icon="queue_music" Path="/composers" data-bs-dismiss="offcanvas" />
+                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Composers" Icon="queue_music" Click="@(() => SearchHandler())" data-bs-dismiss="offcanvas" />
                 <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Media Links" Icon="queue_music" Path="/medialinks" data-bs-dismiss="offcanvas" />
                 <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="User" Icon="account_box" Path="/user" data-bs-dismiss="offcanvas" />
             </RadzenPanelMenu>
-            <form class="d-flex mt-3" role="search">
-                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Search</button>
-            </form>
+            <EditForm class="d-flex mt-3" role="search" Model=searchValue OnSubmit="@(() => SearchHandler(searchValue))" id="search-line" >
+                <input class="form-control me-2" @bind-value="searchValue" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit" data-bs-dismiss="offcanvas">Search</button>
+            </EditForm>
         </div>
     </div>
 </nav>
 
+@code{
+    private string searchValue = "";
+
+    private void SearchHandler(string? value = null){
+        if(value == null || string.IsNullOrWhiteSpace(value))
+        {
+            navManager.NavigateTo($"composers", true);
+        }
+        else
+        {
+            navManager.NavigateTo($"composers?search={searchValue}", true);
+        }
+    } 
+}

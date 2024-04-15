@@ -14,9 +14,7 @@ public class ComposerService : IComposerService
 
     public ComposerService(IHttpClientFactory factory)
     {
-        _httpClient = factory.CreateClient();
-        _httpClient.BaseAddress = new Uri("http://localhost:5000");
-        _httpClient.DefaultRequestHeaders.Add("x-api-key", "muokY3cGjaA6juhmJmKyOOoZDhDscmrst2LosF9HieS5IH8o4JkkBroYEgqmn4yHVdXlqvpzm7Z5pn3iZqGJF5a8jL2SmcZzEHOEQpPeX1XermLkV6KImCybcDNQ3TVr");
+        _httpClient = factory.CreateClient("ApiServer");
     }
 
     public async Task<ComposerModel?> GetById(int id) => 
@@ -24,11 +22,9 @@ public class ComposerService : IComposerService
 
     public async Task<IEnumerable<ComposerModel>> GetComposers() => 
         await _httpClient.GetFromJsonAsync<IEnumerable<ComposerModel>>("/composers") ?? [];
-    
-    public Task<IEnumerable<ComposerModel>> Search(string query)
-    {
-        throw new NotImplementedException();
-    }
+
+    public async Task<IEnumerable<ComposerModel>> Search(string name) =>
+        await _httpClient.GetFromJsonAsync<IEnumerable<ComposerModel>>($"/composers/search?query={name}") ?? [];
 
     public async Task<int> AddNew(ComposerModel composer)
     {
@@ -36,7 +32,7 @@ public class ComposerService : IComposerService
         if (response != null && response.IsSuccessStatusCode)
         {
             var content = await response.Content.ReadAsStringAsync();
-            await Console.Out.WriteLineAsync(content);
+            await Console.Out.WriteLineAsync("Interactive Server:" + content);
             return JsonSerializer.Deserialize<int>(content, _jsonOptions);
         }
         return 0;
@@ -60,6 +56,8 @@ public class ComposerService : IComposerService
     public async Task<bool> AddPortrait(int composerId, string imageData)
     {
         var response = await _httpClient.PostAsJsonAsync<PortraitData>($"/composers/{composerId}/portrait", new(imageData));
+        var content = await response.Content.ReadAsStringAsync();
+        await Console.Out.WriteLineAsync("Interactive Server:" + content); // TODO: Logging
         return response != null && response.IsSuccessStatusCode;
     }
 

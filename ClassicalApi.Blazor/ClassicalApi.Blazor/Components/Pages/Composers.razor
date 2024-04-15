@@ -19,19 +19,18 @@
 
     <div style="width:fit-content">
         <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
-            <PropertyColumn Property="c => c.Id" Title="#" Sortable="true" />
-            <PropertyColumn Property="c => c.FirstName" Title="First Name" />
-            <PropertyColumn Property="c => c.LastName" Title="Last Name" Sortable="true" />
-            <PropertyColumn Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
-            <PropertyColumn Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
-            <PropertyColumn Property="c => c.CityOfBirth" Title="City" Sortable="true" />
+            <PropertyColumn Class="qgrid-col-index" Property="c => c.Id" Title="#" Sortable="true" />
+            <PropertyColumn Class="qgrid-col-first" Property="c => c.FirstName" Title="First Name" />
+            <PropertyColumn Class="qgrid-col-last" Property="c => c.LastName" Title="Last Name" Sortable="true" />
+            <PropertyColumn Class="qgrid-col-birth" Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
+            <PropertyColumn Class="qgrid-col-death" Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
             <TemplateColumn>
                 <ComposerViewButton ComposerId="context.Id" IsEditable="IsAdminUser" />
             </TemplateColumn>
             @if (IsAuthenticated)
             {
                 <TemplateColumn>
-                    <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">View Media Links</RadzenButton>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">Media</RadzenButton>
                 </TemplateColumn>
             }
         </QuickGrid>
@@ -45,6 +44,9 @@
 
     private bool IsAuthenticated;
 
+    [SupplyParameterFromQuery(Name = "search")]
+    public string Search { get; set; } = "";
+
     [CascadingParameter]
     private Task<AuthenticationState>? authenticationState { get; set; }
 
@@ -56,7 +58,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ComposerList = (await composerService.GetComposers()).ToArray();
+        if (string.IsNullOrWhiteSpace(Search))
+        {
+            ComposerList = (await composerService.GetComposers()).ToArray();
+        }
+        else
+        {
+            ComposerList = (await composerService.Search(Search)).ToArray();
+        }
+
 
         var state = await authenticationState!;
 

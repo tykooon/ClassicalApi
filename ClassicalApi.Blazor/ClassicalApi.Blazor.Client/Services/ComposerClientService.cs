@@ -30,12 +30,15 @@ public class ComposerClientService : IComposerService
     public async Task<int> AddNew(ComposerModel composer)
     {
         var response = await _httpClient.PostAsJsonAsync<ComposerModel>("/composers", composer);
-        if(response != null && response.IsSuccessStatusCode)
+        if (response != null)
         {
             var content = await response.Content.ReadAsStringAsync();
-            await Console.Out.WriteLineAsync(content);
-            return JsonSerializer.Deserialize<int>(content, _jsonOptions);
-       }
+            await Console.Out.WriteLineAsync("Interactive Client" + content);
+            if (response.IsSuccessStatusCode)
+            {
+                return JsonSerializer.Deserialize<int>(content, _jsonOptions);
+            }
+        }
         return 0;
     }
 
@@ -58,6 +61,11 @@ public class ComposerClientService : IComposerService
     public async Task<bool> AddPortrait(int composerId, string imageData)
     {
         var response = await _httpClient.PostAsJsonAsync<PortraitData>($"/composers/{composerId}/portrait", new(imageData) );
+        if (response != null)
+        {
+            var content = response.Content.ReadAsStringAsync();
+            await Console.Out.WriteLineAsync("Ineractive Client: " + content); // TODO: Logging
+        }
         return response != null && response.IsSuccessStatusCode;
     }
 

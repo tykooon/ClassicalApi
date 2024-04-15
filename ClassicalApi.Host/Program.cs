@@ -2,12 +2,11 @@ using ClassicalApi.Core.Infrastructure;
 using ClassicalApi.Host.EndPoints;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddUserSecrets(Assembly.GetExecutingAssembly());
-
+builder.Configuration.AddJsonFile("private-settings.json");
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>

@@ -90,3 +90,36 @@ footer {
             button:first-of-type {
     background-color: var(--rz-danger);
 }
+
+.qgrid-col-first{
+    max-width:11rem;
+}
+
+.qgrid-col-last {
+    max-width: 9rem;
+}
+
+.qgrid-col-death {
+    max-width: 7rem;
+}
+
+.qgrid-col-birth {
+    max-width: 6rem;
+}
+
+.qgrid-col-index {
+    max-width: 3rem;
+}
+
+@media only screen and (max-width: 768px) {
+    .qgrid-col-birth, .qgrid-col-death, .qgrid-col-index {
+        display: none;
+    }
+    .qgrid-col-first {
+        max-width: 12rem;
+    }
+
+    .qgrid-col-last {
+        max-width: 10rem;
+    }
+}

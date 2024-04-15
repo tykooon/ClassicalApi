@@ -18,7 +18,14 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<IComposerService, ComposerService>();
-builder.Services.AddHttpClient();
+var ApiUrl = builder.Configuration["ApiService:Url"] ?? "";
+var ApiKey = builder.Configuration["ApiService:ApiKey"];
+builder.Services.AddHttpClient("ApiServer").ConfigureHttpClient(opt =>
+{
+    opt.BaseAddress = new Uri(ApiUrl);
+    opt.DefaultRequestHeaders.Add("x-api-key", ApiKey);
+});
+
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();

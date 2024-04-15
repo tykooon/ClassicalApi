@@ -8,10 +8,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<IComposerService, ComposerClientService>();
+var ApiUrl = builder.Configuration.GetValue<string>("ApiService:Url") ?? "";
+var ApiKey = builder.Configuration.GetValue<string>("ApiService:ApiKey");
 builder.Services.AddHttpClient("ApiServer").ConfigureHttpClient(opt =>
 {
-    opt.BaseAddress = new Uri("http://localhost:5000");
-    opt.DefaultRequestHeaders.Add("x-api-key", "muokY3cGjaA6juhmJmKyOOoZDhDscmrst2LosF9HieS5IH8o4JkkBroYEgqmn4yHVdXlqvpzm7Z5pn3iZqGJF5a8jL2SmcZzEHOEQpPeX1XermLkV6KImCybcDNQ3TVr");
+    opt.BaseAddress = new Uri(ApiUrl);
+    opt.DefaultRequestHeaders.Add("x-api-key", ApiKey);
 });
 
 builder.Services.AddAuthorizationCore();

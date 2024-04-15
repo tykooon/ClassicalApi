@@ -25,4 +25,10 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="app-user.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
