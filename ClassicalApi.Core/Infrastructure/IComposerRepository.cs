@@ -8,10 +8,11 @@ public interface IComposerRepository
     IEnumerable<Composer> GetAll();
     IEnumerable<Composer> Search(string query);
     Composer? GetById(int composerId);
-    IEnumerable<Composer> GetByLastName(string composerId);
+    IEnumerable<Composer> GetByIds(params int[] ids);
+    //IEnumerable<Composer> GetByLastName(string composerId);
     byte[]? GetPortrait(int composerId);
     IEnumerable<MediaLink> GetMediaLinks(int composerId);
-    MediaLink? GetMediaLinkById(int id);
+    IEnumerable<MediaLink> GetMediaLinksById(params int[] id);
 
     //Commands
     int AddNew(Composer newComposer);

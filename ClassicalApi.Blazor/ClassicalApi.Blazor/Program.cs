@@ -1,59 +1,38 @@
 using ClassicalApi.Blazor.Components;
 using ClassicalApi.Blazor.Components.Account;
 using ClassicalApi.Blazor.Authentication;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using ClassicalApi.Blazor.Client.Services;
 using ClassicalApi.Blazor.Services;
 using Microsoft.AspNetCore.HttpOverrides;
+using ClassicalApi.Blazor;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("private-data.json");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-
 builder.Services.AddRadzenComponents();
+
+
 builder.Services.AddScoped<IComposerService, ComposerService>();
-var ApiUrl = builder.Configuration["ApiService:Url"] ?? "";
-var ApiKey = builder.Configuration["ApiService:ApiKey"];
 builder.Services.AddHttpClient("ApiServer").ConfigureHttpClient(opt =>
 {
-    opt.BaseAddress = new Uri(ApiUrl);
-    opt.DefaultRequestHeaders.Add("x-api-key", ApiKey);
+    opt.BaseAddress = new Uri(builder.Configuration["ApiService:Url"] ?? "");
+    opt.DefaultRequestHeaders.Add("x-api-key", builder.Configuration["ApiService:ApiKey"]);
 });
 
-
-builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultScheme = IdentityConstants.ApplicationScheme;
-        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-    })
-    .AddIdentityCookies();
-
-builder.Services.AddAuthorization(opt =>
-{
-    opt.AddPolicy("Regular", policy =>
-    {
-        policy.RequireAuthenticatedUser();
-    });
-    opt.AddPolicy("Admin", policy =>
-    {
-        policy.RequireRole("Administrator", "SuperAdmin");
-    });
-    opt.AddPolicy("FullAccess", policy =>
-    {
-        policy.RequireRole("SuperAdmin");
-    });
-});
+builder.Services.ConfigureAuthentication(builder.Configuration);
+builder.Services.ConfigureAuthorization();
 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -71,6 +50,17 @@ builder.Services.AddSingleton<IEmailSender<AppUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
 
+//app.Use((ctx, next) =>
+//{
+//    ctx.Request.Scheme = "https";
+//    return next();
+//});
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions()
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -81,15 +71,6 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions()
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
-app.Use((ctx, next) =>
-{
-    ctx.Request.Scheme = "https";
-    return next();
-});
 
 app.UseResponseCaching();
 
@@ -103,7 +84,7 @@ app.MapRazorComponents<App>()
 
 app.MapAdditionalIdentityEndpoints();
 
-//using(var scope = app.Services.CreateScope())
+//using (var scope = app.Services.CreateScope())
 //{
 //    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 //    await roleManager.CreateAsync(new("Administrator"));

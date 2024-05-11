@@ -69,7 +69,7 @@ public static class EndPointsExtension
         {
             using var context = app.Services.CreateScope();
             var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
-            var media = repo.GetMediaLinkById(id);
+            var media = repo.GetMediaLinksById(id).FirstOrDefault();
             if (media != null)
             {
                 repo.DeleteMedia(id);
@@ -105,11 +105,16 @@ public static class EndPointsExtension
         app.MapGet("/", () =>
     new Dictionary<string, string>() { ["api-name"] = "classical-api", ["version"] = "0.0.1" });
 
-        app.MapGet("/composers", () =>
+        app.MapGet("/composers", ([FromQuery] int[]? id = null) =>
         {
             using var context = app.Services.CreateScope();
             var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
-            return repo.GetAll();
+            if (id == null)
+            {
+                return repo.GetAll();
+            }
+
+            return repo. GetAll();
         });
 
         app.MapGet("/composers/{id:int}", (int id) =>
@@ -119,12 +124,12 @@ public static class EndPointsExtension
             return repo.GetById(id);
         });
 
-        app.MapGet("/composers/{name}", (string name) =>
-        {
-            using var context = app.Services.CreateScope();
-            var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
-            return repo.GetByLastName(name);
-        });
+        //app.MapGet("/composers/{name}", (string name) =>
+        //{
+        //    using var context = app.Services.CreateScope();
+        //    var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
+        //    return repo.GetByLastName(name);
+        //});
 
         app.MapGet("/composers/{id:int}/portrait", (int id) =>
         {
@@ -145,6 +150,18 @@ public static class EndPointsExtension
             using var context = app.Services.CreateScope();
             var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
             return repo.GetMediaLinks(composerId);
+        });
+
+        app.MapGet("/medialinks/selected", ([FromQuery] int[] id) =>
+        {
+            using var context = app.Services.CreateScope();
+            var repo = context.ServiceProvider.GetRequiredService<IComposerRepository>();
+            var result = new List<MediaLink>();
+            if(id.Length > 0)
+            {
+                result = repo.GetMediaLinksById(id).ToList();
+            }
+            return result;
         });
     }
 }

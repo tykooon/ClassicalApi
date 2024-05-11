@@ -1,5 +1,6 @@
 ﻿using ClassicalApi.Blazor.Client.Models;
 using ClassicalApi.Blazor.Client.Services;
+using System.Text;
 using System.Text.Json;
 
 namespace ClassicalApi.Blazor.Services;
@@ -20,8 +21,25 @@ public class ComposerService : IComposerService
     public async Task<ComposerModel?> GetById(int id) => 
         await _httpClient.GetFromJsonAsync<ComposerModel>($"/composers/{id}");
 
-    public async Task<IEnumerable<ComposerModel>> GetComposers() => 
-        await _httpClient.GetFromJsonAsync<IEnumerable<ComposerModel>>("/composers") ?? [];
+    public async Task<IEnumerable<ComposerModel>> GetComposers(IEnumerable<int>? ids = null)
+    {
+        IEnumerable<ComposerModel> result = [];
+        if(ids == null)
+        {
+            result = await _httpClient.GetFromJsonAsync<IEnumerable<ComposerModel>>("/composers") ?? [];
+        }
+        else
+        {
+            var requestUri = new StringBuilder("/composers?");
+            foreach (var id in ids)
+            {
+                requestUri.Append($"id={id}&");
+            }
+            var request = requestUri.ToString()[..^1];
+            result = await _httpClient.GetFromJsonAsync<IEnumerable<ComposerModel>>(request) ?? [];
+        }
+        return result;
+    }
 
     public async Task<IEnumerable<ComposerModel>> Search(string name) =>
         await _httpClient.GetFromJsonAsync<IEnumerable<ComposerModel>>($"/composers/search?query={name}") ?? [];
@@ -62,7 +80,7 @@ public class ComposerService : IComposerService
     }
 
     public async Task<IEnumerable<MediaLinkModel>> GetMediaLinks(int id) =>
-    await _httpClient.GetFromJsonAsync<IEnumerable<MediaLinkModel>>($"/medialinks?composerId={id}") ?? [];
+        await _httpClient.GetFromJsonAsync<IEnumerable<MediaLinkModel>>($"/medialinks?composerId={id}") ?? [];
 
     public async Task<bool> AddMedia(MediaLinkModel mediaLink)
     {
@@ -74,5 +92,16 @@ public class ComposerService : IComposerService
     {
         var response = await _httpClient.DeleteAsync($"/medialinks/{id}");
         return response != null && response.IsSuccessStatusCode;
+    }
+
+    public async Task<IEnumerable<MediaLinkModel>> GetMediaLinksById(IEnumerable<int> linkIds)
+    {
+        var requestUri = new StringBuilder("/medialinks/selected?");
+        foreach (var linkId in linkIds)
+        {
+            requestUri.Append($"id={linkId}&");
+        }
+        var request = requestUri.ToString()[..^1];
+        return await _httpClient.GetFromJsonAsync<IEnumerable<MediaLinkModel>>(request) ?? [];
     }
 }

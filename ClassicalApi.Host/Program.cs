@@ -1,16 +1,13 @@
 using ClassicalApi.Core.Infrastructure;
+using ClassicalApi.Host;
 using ClassicalApi.Host.EndPoints;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("private-settings.json");
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
+builder.Services.AddConfiguredDbContext(builder.Configuration);
 
 builder.Services.AddResponseCaching();
 

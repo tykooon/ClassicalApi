@@ -1,11 +1,16 @@
 ﻿@page "/medialinks/{ComposerId:int}"
+@using ClassicalApi.Blazor.Authentication
+@using ClassicalApi.Blazor.Services
 @using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
 @attribute [Authorize(Policy = "Regular")]
 
 @inject IComposerService composerService
-@inject AuthenticationStateProvider authProvider
 @inject NavigationManager navManager
 @inject DialogService dialogService
+@inject ICurrentUserService currentUserService
+@inject TooltipService tooltipService
 
 <PageTitle>Media Links</PageTitle>
 
@@ -24,6 +29,21 @@
     <div style="width:fit-content">
         <QuickGrid Items="LinkList.AsQueryable()" Pagination="pagination">
             <PropertyColumn Property="c => c.Title" Title="Title" Sortable="true" />
+            <TemplateColumn>
+                @if (userFavorites.Contains(context.Id))
+                {
+                    <RadzenButton Variant="Variant.Text" Icon="favorite" ButtonStyle="ButtonStyle.Danger"
+                        MouseEnter=@((e) => tooltipService.Open(e, "Remove from Favorites")) 
+                        Click=@(async () => await DeleteFromFavorite(context.Id)) Size="ButtonSize.Medium" class="rz-border-radius-10 rz-shadow-6" />
+                }
+                else
+                {
+                    <RadzenButton Variant="Variant.Text" Icon="favorite_border" ButtonStyle="ButtonStyle.Secondary"
+                                  MouseEnter=@((e) => tooltipService.Open(e, "Add to Favorites"))
+                                  Click=@(async () => await AddToFavorite(context.Id)) Size="ButtonSize.Medium" class="rz-border-radius-10 rz-shadow-6" />
+
+                }
+            </TemplateColumn>
             <TemplateColumn>
                 <a  class="btn btn-primary" href="@context.Url" target="_blank">Open</a>
             </TemplateColumn>
@@ -49,6 +69,10 @@
     private ComposerModel Composer = new();
 
     private string Portrait = "";
+
+    private string userEmail = "";
+
+    private HashSet<int> userFavorites = [];
 
     private bool IsAdmin;
 
@@ -84,9 +108,18 @@
         Composer = data!;
         Portrait = "data:image/jpeg;base64," + await composerService.GetPortrait(ComposerId);
         LinkList = await composerService.GetMediaLinks(ComposerId);
+        var user = await currentUserService.GetUserInfoAsync();
+        userFavorites = user?.FavoriteMediaIds ?? [];
+        IsAdmin = await currentUserService.IsAdmin();
+    }
 
-        var state = await authenticationState!;
+    private async Task AddToFavorite(int mediaId)
+    {
+        userFavorites = await currentUserService.AddMediaToUserFavorites(mediaId);
+    }
 
-        IsAdmin = state != null && (state.User.IsInRole("Administrator") || state.User.IsInRole("SuperAdmin"));
+    private async Task DeleteFromFavorite(int mediaId)
+    {
+        userFavorites = await currentUserService.DeleteMediaFromUserFavorites(mediaId);
     }
 }

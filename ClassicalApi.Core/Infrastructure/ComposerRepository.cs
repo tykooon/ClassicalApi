@@ -24,8 +24,13 @@ public class ComposerRepository : IComposerRepository
     public Composer? GetById(int id) =>
         _composers.Find(id);
 
-    public IEnumerable<Composer> GetByLastName(string lastName) =>
-        _composers.Where(x => x.LastName.Equals(lastName, StringComparison.CurrentCultureIgnoreCase)).ToList();
+    public IEnumerable<Composer> GetByIds(params int[] ids)
+    {
+        return _composers.Where(c => ids.Contains(c.Id));
+    }
+
+    //public IEnumerable<Composer> GetByLastName(string lastName) =>
+    //    _composers.Where(x => x.LastName.Equals(lastName, StringComparison.CurrentCultureIgnoreCase)).ToList();
 
     public int AddNew(Composer composer)
     {
@@ -109,10 +114,8 @@ public class ComposerRepository : IComposerRepository
     public IEnumerable<MediaLink> GetMediaLinks(int composerId) => 
         _mediaLinks.Where(m => m.Composers.Select(c => c.Id).Contains(composerId)).ToList();
 
-    public MediaLink? GetMediaLinkById(int mediaId) =>
-        _mediaLinks.Find(mediaId);
-
-
+    public IEnumerable<MediaLink> GetMediaLinksById(params int[] mediaIds) =>
+        _mediaLinks.Include(m => m.Composers).Where(m => mediaIds.Contains(m.Id));
 
     public int AddNewMedia(MediaLink newMedia)
     {

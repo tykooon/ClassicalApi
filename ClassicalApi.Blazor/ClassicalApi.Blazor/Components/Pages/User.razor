@@ -1,0 +1,103 @@
+﻿@page "/user"
+@using ClassicalApi.Blazor.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+
+@inject ICurrentUserService currentUserService
+@inject IComposerService composerService
+@inject DialogService dialogService
+@inject NavigationManager navManager
+
+@attribute [Authorize(Policy = "Regular")]
+
+<PageTitle>User Favorites</PageTitle>
+
+<div class="container m-3">
+    <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
+        <h3 style="margin:0 2rem 0 1rem;">
+            @if (_isAuthenticated)
+            {
+                <p>Hello, @name</p>
+            }
+        </h3>
+    </RadzenRow>
+    <h3 class="mb-3">
+        Here's the list of your favorite medialinks:
+    </h3>
+
+    <div style="width:fit-content">
+        <QuickGrid Items="mediaLinkViews.AsQueryable()" Pagination="pagination">
+            <PropertyColumn Property="c => c.Title" Title="Title" Sortable="true" />
+            <PropertyColumn Property="c => c.Composers" Title="Composers" Sortable="true" />
+            <TemplateColumn>
+                <a class="btn btn-primary" href="@context.Url" target="_blank">Open</a>
+            </TemplateColumn>
+            <TemplateColumn>
+                <RadzenButton Icon="delete" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Danger" Click="@(async () => await ConfirmDelete(context.Title, context.Id))" />
+            </TemplateColumn>
+        </QuickGrid>
+        <Paginator State="pagination"></Paginator>
+    </div>
+</div>
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    private bool _isAuthenticated;
+    private string name = "";
+
+    private HashSet<int> favoriteMediaList = [];
+    private IEnumerable<MediaLinkModel> mediaLinks = [];
+    private IEnumerable<ComposerModel> composers = [];
+    private List<MediaLinkViewModel> mediaLinkViews = [];
+
+    private PaginationState pagination = new();
+
+    private async Task ConfirmDelete(string title, int id)
+    {
+        var confirm = await dialogService.Confirm($"You are going to delete from favorites link \"{title}\"?", "Confirm deleting", new()
+            {
+                OkButtonText = "Delete",
+                CancelButtonText = "Cancel",
+                CssClass = "delete-confirm"
+
+            });
+        if (confirm != null && confirm.Value)
+        {
+            await currentUserService.DeleteMediaFromUserFavorites(id);
+            navManager.Refresh(true);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await authenticationState!;
+
+        _isAuthenticated =  await currentUserService.IsAuthenticated();
+        var user = await currentUserService.GetUserInfoAsync();
+
+        name = user?.Email ?? "Anonymous";
+        favoriteMediaList = user?.FavoriteMediaIds ?? [];
+
+        mediaLinks = await composerService.GetMediaLinksById(favoriteMediaList);
+
+        var composerIds = mediaLinks.SelectMany(m => m.ComposerIds).Distinct();
+        composers = await composerService.GetComposers(composerIds);
+
+        foreach(var link in mediaLinks)
+        {
+            var composersToString = string.Join(", ", composers.Where(c => link.ComposerIds.Contains(c.Id)).Select(c => c.LastName));
+            mediaLinkViews.Add(new()
+                {
+                    Id = link.Id,
+                    Title = link.Title,
+                    Url = link.Url,
+                    Composers = composersToString
+                });
+        }
+    }
+
+}
