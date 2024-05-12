@@ -35,6 +35,12 @@ public class CurrentUserService : ICurrentUserService
         return state?.User?.Identity != null && state.User.Identity.IsAuthenticated;
     }
 
+    public async Task<bool> IsSuperAdmin()
+    {
+        var state = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        return state != null && state.User.IsInRole("SuperAdmin");
+    }
+
     public async Task<HashSet<int>> AddMediaToUserFavorites(int mediaId)
     {
         var user = await GetUserInfoAsync();

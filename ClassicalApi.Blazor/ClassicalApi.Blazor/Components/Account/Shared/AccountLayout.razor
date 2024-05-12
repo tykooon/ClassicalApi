@@ -2,15 +2,16 @@
 @layout ClassicalApi.Blazor.Components.Layout.MainLayout
 @inject NavigationManager NavigationManager
 
-@if (HttpContext is null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    @Body
-}
-
+<div class="m-3">
+    @if (HttpContext is null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        @Body
+    }
+</div>
 @code {
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }

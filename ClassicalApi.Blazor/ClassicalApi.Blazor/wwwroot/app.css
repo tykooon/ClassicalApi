@@ -124,5 +124,15 @@ footer {
     }
 }
 
+@media only screen and (max-width: 768px) {
+    .mobile-hide {
+        display: none;
+    }
+}
+
+.font-calligraphic {
+    font-family: 'Lucida Handwriting'
+}
+
 
 

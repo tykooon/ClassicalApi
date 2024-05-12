@@ -47,19 +47,28 @@ builder.Services.AddIdentityCore<AppUser>(options => options.SignIn.RequireConfi
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<AppUser>, IdentityNoOpEmailSender>();
+bool useHttpsRequestSceme = builder.Configuration.GetValue<bool>("UseHttpsRequestSchene");
 
 var app = builder.Build();
-
-//app.Use((ctx, next) =>
-//{
-//    ctx.Request.Scheme = "https";
-//    return next();
-//});
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions()
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
+
+if (useHttpsRequestSceme)
+{
+    app.Use((context, next) =>
+    {
+        if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var protoHeaderValue) &&
+                protoHeaderValue == "https")
+        {
+            context.Request.Scheme = "https";
+        }
+        return next();
+    });
+}
+
 
 if (app.Environment.IsDevelopment())
 {

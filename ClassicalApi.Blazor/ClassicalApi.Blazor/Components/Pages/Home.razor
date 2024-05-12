@@ -1,31 +1,36 @@
 ﻿@page "/"
 @inject DialogService dialogService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Eternal Classics</PageTitle>
 
 <h1 class="invisible">Hello!</h1>
 
 <div class="container-md" style="max-width:800px; margin-inline:auto">
     <RadzenStack Orientation="Orientation.Vertical" Gap="2rem" class="rz-p-3">
         <RadzenText TextStyle="TextStyle.H3" TextAlign="TextAlign.Center">
-            Welcome to Classical Api
+            Welcome to 'Eternal Classics Links'
         </RadzenText>
 
         <RadzenText TextStyle="TextStyle.Body1" TextAlign="TextAlign.Justify" Style="font-size:larger; line-height: 1.7em;">
-            This is a small tutorial app, developed for learning
-            the best practices of Blazor interacting with api service and
-            with third-party authentication providers.
+            This is a small app for classical music fans, where you can
+            find some info about famous composers and get links to the 
+            best performances of their pieces.
         </RadzenText>
 
         <RadzenText TextStyle="TextStyle.Body1" TextAlign="TextAlign.Justify" Style="font-size:larger; line-height: 1.7em;">
-            After <a href="account\login">logging in</a> with personal or Google account you will
-            get access to small database with classical composers and links to some media with their music.
-            If you were lucky to get admin access, you may also contribute to this database by adding some info.
+            After <a href="account\login">logging in</a> with personal account (or via Google, Microsoft or Facebook account) you will
+            get access to list of composers and links to video with their music. You can mark
+            any link with "like" to add it to your favorites list. So later your can access to the list 
+            of your favorites on <a href="user">User</a>  page.
         </RadzenText>
 
         <RadzenText TextStyle="TextStyle.Body1" TextAlign="TextAlign.Justify" Style="font-size:larger; line-height: 1.7em;">
-            Don't hesitate to contact with app developer by <a href="mailto:alextykoun@gmail.com">mail</a>
-            and have a nice day ))
+            If you were lucky to get admin access, you may also contribute to this database by adding some info. Don't hesitate to contact with app developer by <a href="mailto:alextykoun@gmail.com">mail</a>.
+            You can also consider the opportunity of supporting this project with coffee cups)).
+        </RadzenText>
+
+        <RadzenText TextStyle="TextStyle.Body1" TextAlign="TextAlign.Justify" Style="font-size:larger; line-height: 1.7em;">
+            Listen to Classics and have a nice day!
         </RadzenText>
     </RadzenStack>
     <div class="d-flex justify-content-center my-3">

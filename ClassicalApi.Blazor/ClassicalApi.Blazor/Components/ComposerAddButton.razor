@@ -14,6 +14,6 @@
         var title = "Add new Composer";
         var viewed = await dialogService.OpenAsync<ComposerCard>(title,
                new Dictionary<string, object>() { { "ComposerId", 0 }, { "IsReadOnly", false } },
-               new DialogOptions() { Width = "640px", Height = "600px", Top = "80px !important",  Resizable = true, Draggable = false, CloseDialogOnEsc = true });
+               new DialogOptions() { Width = "640px", Height = "560px", Top = "80px !important",  Resizable = true, Draggable = false, CloseDialogOnEsc = true, CloseDialogOnOverlayClick=true});
     }
 }
