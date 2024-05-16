@@ -7,12 +7,12 @@
 <nav class="navbar fixed-top bg-primary">
     <RadzenStack Orientation="Orientation.Horizontal" Gap="0" Style="padding-right:1em;width:100%;" JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
         <div class="d-flex align-items-center">
-            <RadzenButton Variant="Variant.Text" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+            <RadzenButton Variant="Variant.Outlined" data-bs-toggle="offcanvas" class="p-1 mx-1" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
                 <img src="/src/ClassicalApiLogo.svg" height="40" />
-            <RadzenText class="mb-0 mobile-hide font-calligraphic" Style="color:aliceblue; font-size:larger; align-self:center;">
+            </RadzenButton>
+            <RadzenText class="mb-0 ms-1 mobile-hide font-calligraphic" Style="color:aliceblue; align-self:center;">
                 Eternal Classics Links
             </RadzenText> 
-            </RadzenButton>
         </div>
         <div>
             <AuthorizeView>
@@ -37,11 +37,11 @@
             <RadzenPanelMenu>
                 <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Home" Icon="home" Path="/" data-bs-dismiss="offcanvas" />
                 <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Composers" Icon="queue_music" Path="/composers" data-bs-dismiss="offcanvas" />
-                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Media Links" Icon="queue_music" Path="/medialinks" data-bs-dismiss="offcanvas" />
+                <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Media Links" Icon="link" Path="/medialinks" data-bs-dismiss="offcanvas" />
                 <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="User" Icon="account_box" Path="/user" data-bs-dismiss="offcanvas" />
                 @if (isSuperAdmin)
                 {
-                    <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Super Admin" Icon="account_box" Path="/superadmin" data-bs-dismiss="offcanvas" />
+                    <RadzenPanelMenuItem class="my-2" Style="font-size:larger;" Text="Super Admin" Icon="dangerous" Path="/superadmin" data-bs-dismiss="offcanvas" />
                 }
             </RadzenPanelMenu>
             <EditForm class="d-flex mt-3" role="search" Model=searchValue OnSubmit="@(() => SearchHandler(searchValue))" id="search-line" >

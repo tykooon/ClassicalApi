@@ -1,74 +1,58 @@
 using ClassicalApi.Blazor.Components;
-using ClassicalApi.Blazor.Components.Account;
 using ClassicalApi.Blazor.Authentication;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using ClassicalApi.Blazor.Client.Services;
 using ClassicalApi.Blazor.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using ClassicalApi.Blazor;
+using ClassicalApi.Blazor.Middleware;
+using ClassicalApi.Blazor.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("private-data.json");
+var appSettings = new AppSettings(builder.Configuration);
 
-// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddRadzenComponents();
 
-
 builder.Services.AddScoped<IComposerService, ComposerService>();
 builder.Services.AddHttpClient("ApiServer").ConfigureHttpClient(opt =>
 {
-    opt.BaseAddress = new Uri(builder.Configuration["ApiService:Url"] ?? "");
-    opt.DefaultRequestHeaders.Add("x-api-key", builder.Configuration["ApiService:ApiKey"]);
+    opt.BaseAddress = new Uri(appSettings.ApiServiceUrl);
+    opt.DefaultRequestHeaders.Add("x-api-key", appSettings.ApiServiceKey);
 });
 
-builder.Services.AddScoped<IdentityUserAccessor>();
-builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 builder.Services.ConfigureAuthentication(builder.Configuration);
 builder.Services.ConfigureAuthorization();
-
+builder.Services.ConfigureIdentityCore();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddSignInManager()
-    .AddDefaultTokenProviders();
-
-builder.Services.AddSingleton<IEmailSender<AppUser>, IdentityNoOpEmailSender>();
-bool useHttpsRequestSceme = builder.Configuration.GetValue<bool>("UseHttpsRequestSchene");
+if (appSettings.ForceSecureCookie)
+{
+    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddSession(options =>
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always);
+}
 
 var app = builder.Build();
 
+app.UseLogHeaders(appSettings.LoggingHeaders);
+app.UseHttpsScheme(appSettings.UseHttpsRequestScheme);
 app.UseForwardedHeaders(new ForwardedHeadersOptions()
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
 });
-
-if (useHttpsRequestSceme)
-{
-    app.Use((context, next) =>
-    {
-        if (context.Request.Headers.TryGetValue("X-Forwarded-Proto", out var protoHeaderValue) &&
-                protoHeaderValue == "https")
-        {
-            context.Request.Scheme = "https";
-        }
-        return next();
-    });
-}
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -80,11 +64,10 @@ else
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
 
-
 app.UseResponseCaching();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
+//app.UseSession();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
@@ -93,12 +76,6 @@ app.MapRazorComponents<App>()
 
 app.MapAdditionalIdentityEndpoints();
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-//    await roleManager.CreateAsync(new("Administrator"));
-//    await roleManager.CreateAsync(new("SuperAdmin"));
-//    await roleManager.CreateAsync(new("User"));
-//}
+//await app.SeedIdentityRoles();
 
 app.Run();

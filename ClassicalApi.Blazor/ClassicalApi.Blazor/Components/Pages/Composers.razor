@@ -27,12 +27,9 @@
             <TemplateColumn>
                 <ComposerViewButton ComposerId="context.Id" IsEditable="IsAdminUser" />
             </TemplateColumn>
-            @if (IsAuthenticated)
-            {
-                <TemplateColumn>
-                    <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">Media</RadzenButton>
-                </TemplateColumn>
-            }
+            <TemplateColumn>
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">&#9835;</RadzenButton>
+            </TemplateColumn>
         </QuickGrid>
         <Paginator State="pagination"></Paginator>
     </div>

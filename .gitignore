@@ -363,3 +363,13 @@ MigrationBackup/
 FodyWeavers.xsd
 /ClassicalApi.Host/private-settings.json
 /ClassicalApi.Blazor/ClassicalApi.Blazor/private-data.json
+/ClassicalApi.Host/app — backup.db
+/ClassicalApi.Host/app.db
+/ClassicalApi.Blazor/ClassicalApi.Blazor/app-user.db
+/ClassicalApi.Blazor/ClassicalApi.Blazor/app-user.db-shm
+/ClassicalApi.Blazor/ClassicalApi.Blazor/app-user.db-wal
+/ClassicalApi.Host/app-db
+/ClassicalApi.Host/app.db-shm
+/ClassicalApi.Host/app.db-wal
+/ClassicalApi.Host/app.db.backup
+/ClassicalApi.Host/composers.sql
