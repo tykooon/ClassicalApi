@@ -26,37 +26,51 @@
     </RadzenRow>
 
     <div style="width:fit-content">
-        <QuickGrid Items="LinkList.AsQueryable()" Pagination="pagination">
-            <PropertyColumn Property="c => c.Title" Title="Title" Sortable="true" />
-            @if(IsAuthenticated){
-                <TemplateColumn>
-                    @if (userFavorites.Contains(context.Id))
-                    {
-                        <RadzenButton Variant="Variant.Text" Icon="favorite" ButtonStyle="ButtonStyle.Danger"
-                            MouseEnter=@((e) => tooltipService.Open(e, "Remove from Favorites")) 
-                            Click=@(async () => await DeleteFromFavorite(context.Id)) Size="ButtonSize.Medium" class="rz-border-radius-10 rz-shadow-6" />
-                    }
-                    else
-                    {
-                        <RadzenButton Variant="Variant.Text" Icon="favorite_border" ButtonStyle="ButtonStyle.Secondary"
-                                    MouseEnter=@((e) => tooltipService.Open(e, "Add to Favorites"))
-                                    Click=@(async () => await AddToFavorite(context.Id)) Size="ButtonSize.Medium" class="rz-border-radius-10 rz-shadow-6" />
+        @if (isDataLoaded)
+        {
+            <QuickGrid Items="LinkList.AsQueryable()" Pagination="pagination">
+                <PropertyColumn Property="c => c.Title" Title="Title" Sortable="true" />
+                @if(isAuthenticated){
+                    <TemplateColumn>
+                        @if (userFavorites.Contains(context.Id))
+                        {
+                            <RadzenButton Variant="Variant.Text" Icon="favorite" ButtonStyle="ButtonStyle.Danger"
+                                MouseEnter=@((e) => tooltipService.Open(e, "Remove from Favorites")) 
+                                Click=@(async () => await DeleteFromFavorite(context.Id)) Size="ButtonSize.Medium" class="rz-border-radius-10 rz-shadow-6" />
+                        }
+                        else
+                        {
+                            <RadzenButton Variant="Variant.Text" Icon="favorite_border" ButtonStyle="ButtonStyle.Secondary"
+                                        MouseEnter=@((e) => tooltipService.Open(e, "Add to Favorites"))
+                                        Click=@(async () => await AddToFavorite(context.Id)) Size="ButtonSize.Medium" class="rz-border-radius-10 rz-shadow-6" />
     
-                    }
-                </TemplateColumn>
-            }
-            <TemplateColumn>
-                <a  class="btn btn-primary" href="@context.Url" target="_blank">Open</a>
-            </TemplateColumn>
-            @if (IsAdmin)
-            {
+                        }
+                    </TemplateColumn>
+                }
                 <TemplateColumn>
-                    <RadzenButton Icon="delete" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Danger" Click="@(async () => await ConfirmDelete(context.Title, context.Id))" />
+                    <a  class="btn btn-primary" href="@context.Url" target="_blank">Open</a>
                 </TemplateColumn>
-            }
-        </QuickGrid>
-        <Paginator State="pagination"></Paginator>
+                @if (isAdmin)
+                {
+                    <TemplateColumn>
+                        <RadzenButton Icon="delete" Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Danger" Click="@(async () => await ConfirmDelete(context.Title, context.Id))" />
+                    </TemplateColumn>
+                }
+            </QuickGrid>
+            <Paginator State="pagination"></Paginator>
+        }
+        else
+        {
+            <p>
+                Loading Data <span style="display:inline-block; height:2rem; width:2rem;"> <img src="src/fade-stagger-circles.svg" /></span>
+            </p>
+        }
     </div>
+    <RadzenRow JustifyContent="JustifyContent.Left" AlignItems="AlignItems.Start" class="my-4">
+        <a  class="btn btn-primary" href="#" style="height:75%" onclick=@(() => navManager.NavigateTo("/composers"))>
+                <i class="bi bi-arrow-left"></i><span>&nbsp; To Composers List</span>
+        </a>
+    </RadzenRow>
 </div>
 
 
@@ -66,14 +80,16 @@
 
     private ComposerModel Composer = new();
 
+    private bool isDataLoaded = false;
+
     private string Portrait = "";
 
     private string userEmail = "";
 
     private HashSet<int> userFavorites = [];
 
-    private bool IsAdmin;
-    private bool IsAuthenticated;
+    private bool isAdmin;
+    private bool isAuthenticated;
 
     private IEnumerable<MediaLinkModel> LinkList = [];
 
@@ -109,8 +125,9 @@
 
         var user = await currentUserService.GetUserInfoAsync();
         userFavorites = user?.FavoriteMediaIds ?? [];
-        IsAdmin = await currentUserService.IsAdmin();
-        IsAuthenticated = await currentUserService.IsAuthenticated();
+        isAdmin = await currentUserService.IsAdmin();
+        isAuthenticated = await currentUserService.IsAuthenticated();
+        isDataLoaded = true;
     }
 
     private async Task AddToFavorite(int mediaId)

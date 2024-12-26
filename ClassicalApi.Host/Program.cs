@@ -35,7 +35,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions()
 });
 
 app.UseResponseCaching();
-
 app.AddQueryEndpoints();
 app.AddCommandEndpoints();
 

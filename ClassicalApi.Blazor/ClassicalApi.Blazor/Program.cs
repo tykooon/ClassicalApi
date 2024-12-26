@@ -7,7 +7,10 @@ using ClassicalApi.Blazor.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using ClassicalApi.Blazor;
 using ClassicalApi.Blazor.Middleware;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using ClassicalApi.Blazor.Services.Mail;
 using ClassicalApi.Blazor.Helpers;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,14 +30,14 @@ builder.Services.AddHttpClient("ApiServer").ConfigureHttpClient(opt =>
 });
 
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddTransient<IEmailSender, AppMailSender>();
+
+builder.Services.AddConfiguredDbContext(builder.Configuration);
 
 builder.Services.ConfigureAuthentication(builder.Configuration);
 builder.Services.ConfigureAuthorization();
 builder.Services.ConfigureIdentityCore();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(connectionString));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

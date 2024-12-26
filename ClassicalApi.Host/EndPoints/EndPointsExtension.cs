@@ -113,7 +113,7 @@ public static class EndPointsExtension
             {
                 return repo.GetAll();
             }
-
+            // TODO: Get by Ids list
             return repo. GetAll();
         });
 

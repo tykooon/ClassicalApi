@@ -8,38 +8,49 @@
 
 <PageTitle>Composers</PageTitle>
 
-<div class="container m-3">
+<div class="p-3 overflow-auto">
     <RadzenRow JustifyContent="JustifyContent.Start" class="mb-4">
         <h1 style="margin:0 2rem 0 1rem;">Composers</h1>
-        @if (IsAdminUser)
+        @if (isAdminUser)
         {
             <ComposerAddButton />
         }
     </RadzenRow>
 
     <div style="width:fit-content">
-        <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
-            <PropertyColumn Class="qgrid-col-index" Property="c => c.Id" Title="#" Sortable="true" />
-            <PropertyColumn Class="qgrid-col-first" Property="c => c.FirstName" Title="First Name" />
-            <PropertyColumn Class="qgrid-col-last" Property="c => c.LastName" Title="Last Name" Sortable="true" />
-            <PropertyColumn Class="qgrid-col-birth" Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
-            <PropertyColumn Class="qgrid-col-death" Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
-            <TemplateColumn>
-                <ComposerViewButton ComposerId="context.Id" IsEditable="IsAdminUser" />
-            </TemplateColumn>
-            <TemplateColumn>
-                <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">&#9835;</RadzenButton>
-            </TemplateColumn>
-        </QuickGrid>
-        <Paginator State="pagination"></Paginator>
+        @if(isDataLoaded)
+        {
+            <QuickGrid Items="ComposerList.AsQueryable()" Pagination="pagination">
+                <PropertyColumn Class="qgrid-col-index" Property="c => c.Id" Title="#" Sortable="true" />
+                <PropertyColumn Class="qgrid-col-first" Property="c => c.FirstName" Title="First Name" />
+                <PropertyColumn Class="qgrid-col-last" Property="c => c.LastName" Title="Last Name" Sortable="true" />
+                <PropertyColumn Class="qgrid-col-birth" Property="c => c.YearOfBirth" Title="Birth" Sortable="true" />
+                <PropertyColumn Class="qgrid-col-death" Property="c => c.YearOfDeath" Title="Death" Sortable="true" />
+                <TemplateColumn>
+                    <ComposerViewButton ComposerId="context.Id" IsEditable="isAdminUser" />
+                </TemplateColumn>
+                <TemplateColumn>
+                    <RadzenButton ButtonStyle="ButtonStyle.Success" Click="@(() => RedirectToMedia(context.Id))">&#9835;</RadzenButton>
+                </TemplateColumn>
+            </QuickGrid>
+            <Paginator State="pagination"></Paginator>
+        }
+        else
+        {
+            <p>
+                Loading Data <span style="display:inline-block; height:2rem; width:2rem;"> <img src="src/fade-stagger-circles.svg" /></span>
+            </p>
+        }
     </div>
 
 </div>
 
 @code{
-    private bool IsAdminUser;
+    private bool isAdminUser;
 
-    private bool IsAuthenticated;
+    private bool isAuthenticated;
+
+    private bool isDataLoaded = false;
 
     [SupplyParameterFromQuery(Name = "search")]
     public string Search { get; set; } = "";
@@ -67,7 +78,8 @@
 
         var state = await authenticationState!;
 
-        IsAdminUser = state != null && (state.User.IsInRole("Administrator") || state.User.IsInRole("SuperAdmin"));
-        IsAuthenticated = state != null && (state.User.Identity?.IsAuthenticated ?? false);
+        isAuthenticated = state != null && (state.User.Identity?.IsAuthenticated ?? false);
+        isAdminUser = state != null && (state.User.IsInRole("Administrator") || state.User.IsInRole("SuperAdmin"));
+        isDataLoaded = true;
     }
 }

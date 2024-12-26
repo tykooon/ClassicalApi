@@ -9,16 +9,17 @@
         <div class="d-flex align-items-center">
             <RadzenButton Variant="Variant.Outlined" data-bs-toggle="offcanvas" class="p-1 mx-1" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
                 <img src="/src/ClassicalApiLogo.svg" height="40" />
+                <RadzenText class="mb-0 ms-1 font-calligraphic" Style="color:aliceblue; align-self:center;">
+                    Classical Links
+                </RadzenText>
             </RadzenButton>
-            <RadzenText class="mb-0 ms-1 mobile-hide font-calligraphic" Style="color:aliceblue; align-self:center;">
-                Eternal Classics Links
-            </RadzenText> 
+
         </div>
         <div>
             <AuthorizeView>
                 <Authorized>
                     <div class="d-inline-flex align-items-center">
-                        <span class="me-3" style="color:azure;">@context.User.FindFirst(ClaimTypes.Name)?.Value.ToString()</span>
+                        @*<span class="me-3" style="color:azure;">@context.User.FindFirst(ClaimTypes.Name)?.Value.ToString()</span>*@
                         <LogoutButton />
                     </div>
                 </Authorized>
