@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 
 @inject UserManager<AppUser> UserManager
+@inject SignInManager<AppUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Confirm email</PageTitle>
@@ -42,7 +43,15 @@
         {
             var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
             var result = await UserManager.ConfirmEmailAsync(user, code);
-            statusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            if (!result.Succeeded)
+            {
+                statusMessage = "Error confirming your email.";
+                return;
+            }
+            statusMessage = "Thank you for confirming your email. You will be authomatically redirected to list of Composers within 5 seconds.";
+            await SignInManager.SignInAsync(user, isPersistent: false);
+            await Task.Delay(5000);
+            RedirectManager.RedirectTo("Composers");
         }
     }
 }

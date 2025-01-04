@@ -24,9 +24,26 @@
 <hr />
 
 <div  class="alert alert-info">
-    You've successfully authenticated with <strong>@ProviderDisplayName</strong>.
-    Please enter an email address for this site below and click the Register button to finish
-    logging in.
+    <p>
+        You've successfully authenticated with <strong>@ProviderDisplayName</strong>.
+    </p>
+    <p>
+        @if (isExternalEmailProvided)
+        {
+            <span>
+                Your account will be associated with email, provided by <strong>@ProviderDisplayName</strong>.
+                Please click the Register button to finish logging in.
+            </span>
+        }
+        else
+        {
+            <span>
+                However, <strong>@ProviderDisplayName</strong> did not provide available email for your account.
+                To associate your account with the available email, you should enter valid email and confirm it
+                after clicking the Register button.
+            </span>
+        }
+    </p>
 </div>
 
 <div class="row">
@@ -35,7 +52,16 @@
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" role="alert" />
             <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="email" placeholder="Please enter your email." />
+                @if (isExternalEmailProvided)
+                {
+                    <InputText  @bind-Value="Input.Email" class="form-control"
+                                autocomplete="email" placeholder="Please enter your email." readonly />
+                }
+                else
+                {
+                    <InputText @bind-Value="Input.Email" class="form-control"
+                               autocomplete="email" placeholder="Please enter your email."/>
+                }
                 <label for="email" class="form-label">Email</label>
                 <ValidationMessage For="() => Input.Email" />
             </div>
@@ -49,6 +75,7 @@
 
     private string? message;
     private ExternalLoginInfo externalLoginInfo = default!;
+    private bool isExternalEmailProvided = false;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -81,6 +108,7 @@
         }
 
         externalLoginInfo = info;
+        isExternalEmailProvided = externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email);
 
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
@@ -119,7 +147,7 @@
         }
 
         // If the user does not have an account, then ask the user to create an account.
-        if (externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+        if (isExternalEmailProvided)
         {
             Input.Email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
         }
@@ -133,35 +161,43 @@
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
-        var result = await UserManager.CreateAsync(user);
-        if (result.Succeeded)
+        var resultCreateUser = await UserManager.CreateAsync(user);
+        if (resultCreateUser.Succeeded)
         {
-            result = await UserManager.AddLoginAsync(user, externalLoginInfo);
-            if (result.Succeeded)
+            var resultAddLogin = await UserManager.AddLoginAsync(user, externalLoginInfo);
+            if (resultAddLogin.Succeeded)
             {
                 Logger.LogInformation("User created an account using {Name} provider.", externalLoginInfo.LoginProvider);
 
                 var userId = await UserManager.GetUserIdAsync(user);
                 var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-                    NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
-                    new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
-                await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
-
-                // If account confirmation is required, we need to show the link if we don't have a real email sender
-                if (UserManager.Options.SignIn.RequireConfirmedAccount)
+                if(isExternalEmailProvided)
                 {
-                    RedirectManager.RedirectTo("Account/RegisterConfirmation", new() { ["email"] = Input.Email });
+                    await UserManager.ConfirmEmailAsync(user, code);
+                }
+                else
+                {
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+                    var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+                        NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+                        new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+                    await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+                    // If account confirmation is required, we need to show the link if we don't have a real email sender
+                    if (UserManager.Options.SignIn.RequireConfirmedAccount)
+                    {
+                        RedirectManager.RedirectTo("Account/RegisterConfirmation", new() { ["email"] = Input.Email });
+                    }
                 }
 
                 await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
                 RedirectManager.RedirectTo(ReturnUrl);
             }
+            message = string.Join(",", resultAddLogin.Errors.Select(error => error.Description));
         }
-
-        message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
+        message = $"Error: {string.Join(",", resultCreateUser.Errors.Select(error => error.Description))}; {message}";
     }
 
     private AppUser CreateUser()
